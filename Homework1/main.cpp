@@ -14,7 +14,9 @@ int main() {
 
 	// scheme://host[:port][/path][?query][#fragment] 
 	
-	char str[] = "128.194.135.72";
+	//char str[] = "128.194.135.72";
+	char str[] = "www.tamu.edu";
+
 
 	WSADATA wsadata;
 
@@ -25,6 +27,9 @@ int main() {
 		WSACleanup();
 		return -1;
 	}
+
+	// Above main()
+	// Below object
 
 	// open TCP socket
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -43,12 +48,26 @@ int main() {
 	// assume ip is an IP address
 	DWORD IP = inet_addr(str);
 	if (IP == INADDR_NONE) {
-		cout << "in address none ip" << endl;
-		return -1;
+
+		// if not valid IP, do DNS lookup
+		remote = gethostbyname(str);
+
+		if (remote == NULL) {
+			printf("Invalid string: neighter FQDN nor IP address \n");
+			return -1;
+		}
+
+		// copy into sin_addr the first IP address
+		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
+
+	}
+	else {
+		// if valid IP, directly drop its binary version into sin_addr
+		server.sin_addr.S_un.S_addr = IP;
+
 	}
 
-	// if valid IP, directly drop its binary version into sin_addr
-	server.sin_addr.S_un.S_addr = IP;
+
 
 
 	// setup port number and protocol type
@@ -83,7 +102,7 @@ int main() {
 	int bytesRead = 1;
 
 	while (bytesRead) {
-		bzero()
+		memset(buffer, 0, BUFFER_SIZE - 1);
 
 		bytesRead = recv(sock, buffer, BUFFER_SIZE - 1, 0);
 
@@ -96,9 +115,7 @@ int main() {
 			return -1;
 		}
 		else {
-			printf("bytes received %d\n", bytesRead);
-			// printf("Results: \n");
-			// printf("%s", buffer);
+			printf("%s", buffer);
 		}
 	}
 	
