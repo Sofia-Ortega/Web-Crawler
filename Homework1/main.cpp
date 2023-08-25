@@ -15,7 +15,10 @@ int main() {
 	// scheme://host[:port][/path][?query][#fragment] 
 	
 	//char str[] = "128.194.135.72";
-	char str[] = "www.tamu.edu";
+	//char str[] = "www.tamu.edu";
+	//char str[] = "www.yahoo.com";
+	// char link[] = "https://irl.cse.tamu.edu/";
+	char str[] = "irl.cse.tamu.edu";
 
 
 	WSADATA wsadata;
@@ -53,7 +56,7 @@ int main() {
 		remote = gethostbyname(str);
 
 		if (remote == NULL) {
-			printf("Invalid string: neighter FQDN nor IP address \n");
+			printf("Invalid string: neither FQDN nor IP address \n");
 			return -1;
 		}
 
@@ -86,7 +89,8 @@ int main() {
 
 
 	// send http request here
-	const string getRequest = "GET / HTTP/1.0\r\nHost: 128.194.135.72\r\n\r\n";
+	cout << "URL: " << str << endl << endl;
+	const string getRequest = "GET / HTTP/1.0\r\nUser-agent: myTAMUcrawler/1.0\r\nHost: irl.cse.tamu.edu \r\nConnection: close\r\n\r\n";
 	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
 
 	if (sendResult == SOCKET_ERROR) {
@@ -119,7 +123,7 @@ int main() {
 		}
 	}
 	
-
+	
 
 
 
