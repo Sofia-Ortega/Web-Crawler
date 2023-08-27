@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <windows.h>
 
+#include "Socket.h"
+
 #pragma comment(lib, "ws2_32.lib")
 
 using std::cout;
@@ -14,11 +16,11 @@ int main() {
 
 	// scheme://host[:port][/path][?query][#fragment] 
 	
-	//char str[] = "128.194.135.72";
+	char str[] = "128.194.135.72";
 	//char str[] = "www.tamu.edu";
 	//char str[] = "www.yahoo.com";
-	// char link[] = "https://irl.cse.tamu.edu/";
-	char str[] = "irl.cse.tamu.edu";
+	// char str[] = "https://irl.cse.tamu.edu/";
+	// char str[] = "irl.cse.tamu.edu";
 
 
 	WSADATA wsadata;
@@ -31,9 +33,15 @@ int main() {
 		return -1;
 	}
 
+	Socket mySock(str);
+	printf("completed\n");
+	mySock.Read();
+
+
 	// Above main()
 	// Below object
 
+	/*
 	// open TCP socket
 	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
@@ -130,6 +138,7 @@ int main() {
 	// close socket
 	closesocket(sock);
 
+	*/
 	// cleanup!
 	WSACleanup();
 
