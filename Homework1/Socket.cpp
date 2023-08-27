@@ -9,7 +9,7 @@ Socket::Socket(char* address) {
 		return;
 	}
 
-	url = address;
+	this->url = address;
 
 	// connectin to server
 	struct hostent* remote;

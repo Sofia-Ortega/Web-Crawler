@@ -1,9 +1,6 @@
-#include <iostream>
-#include <string>
-#include <stdio.h>
-#include <windows.h>
 
-#include "Socket.h"
+
+#include "stdafx.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -14,7 +11,10 @@ using std::string;
 int main() {
 	cout << "Howdy World" << endl;
 
+
 	// scheme://host[:port][/path][?query][#fragment] 
+
+	/*
 	
 	char str[] = "128.194.135.72";
 	//char str[] = "www.tamu.edu";
@@ -34,116 +34,78 @@ int main() {
 	}
 
 	Socket mySock(str);
-	printf("completed\n");
-	mySock.Read();
+	// mySock.Read();
 
 
-	// Above main()
-	// Below object
-
-	/*
-	// open TCP socket
-	SOCKET sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock == INVALID_SOCKET) {
-		printf("socket() generated error %d\n", WSAGetLastError());
-		WSACleanup();
-		return -1;
-	}
-
-	// structure used in DNS lookup
-	struct hostent* remote;
-	
-	// structure to connect to server
-	struct sockaddr_in server;
-
-	// assume ip is an IP address
-	DWORD IP = inet_addr(str);
-	if (IP == INADDR_NONE) {
-
-		// if not valid IP, do DNS lookup
-		remote = gethostbyname(str);
-
-		if (remote == NULL) {
-			printf("Invalid string: neither FQDN nor IP address \n");
-			return -1;
-		}
-
-		// copy into sin_addr the first IP address
-		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
-
-	}
-	else {
-		// if valid IP, directly drop its binary version into sin_addr
-		server.sin_addr.S_un.S_addr = IP;
-
-	}
-
-
-
-
-	// setup port number and protocol type
-	server.sin_family = AF_INET;
-	server.sin_port = htons(80); // host-to-network flips byte order
-
-
-	// connect to socket on port 80
-	if (connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in)) == SOCKET_ERROR) {
-		printf("Connection error: %d\n", WSAGetLastError());
-		return -1;
-	}
-
-
-	cout << "connected!" << endl;
-
-
-	// send http request here
-	cout << "URL: " << str << endl << endl;
-	const string getRequest = "GET / HTTP/1.0\r\nUser-agent: myTAMUcrawler/1.0\r\nHost: irl.cse.tamu.edu \r\nConnection: close\r\n\r\n";
-	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
-
-	if (sendResult == SOCKET_ERROR) {
-		printf("Sending error: %d\n", WSAGetLastError());
-		return -1;
-	}
-
-
-	// receive request response here
-
-	const int BUFFER_SIZE = 1024;
-	char buffer[BUFFER_SIZE];
-	int bytesRead = 1;
-
-	while (bytesRead) {
-		memset(buffer, 0, BUFFER_SIZE - 1);
-
-		bytesRead = recv(sock, buffer, BUFFER_SIZE - 1, 0);
-
-		if (bytesRead < 0) {
-			printf("Reading FAILED");
-			return -1;
-		}
-		else if (bytesRead == 0) {
-			printf("connection closed");
-			return -1;
-		}
-		else {
-			printf("%s", buffer);
-		}
-	}
-	
-	
-
-
-
-	// close socket
-	closesocket(sock);
-
-	*/
 	// cleanup!
 	WSACleanup();
+	*/
 
 
+	char filename[] = "tamu2018.html";
 
+	// open html file
+	HANDLE hFile = CreateFile(filename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL, NULL);
+	// process errors
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		printf("CreateFile failed with %d\n", GetLastError());
+		return 0;
+	}
+
+	// get file size
+	LARGE_INTEGER li;
+	BOOL bRet = GetFileSizeEx(hFile, &li);
+	// process errors
+	if (bRet == 0)
+	{
+		printf("GetFileSizeEx error %d\n", GetLastError());
+		return 0;
+	}
+
+	// read file into a buffer
+	int fileSize = (DWORD)li.QuadPart;			// assumes file size is below 2GB; otherwise, an __int64 is needed
+	DWORD bytesRead;
+	// allocate buffer
+	char* fileBuf = new char[fileSize];
+	// read into the buffer
+	bRet = ReadFile(hFile, fileBuf, fileSize, &bytesRead, NULL);
+	// process errors
+	if (bRet == 0 || bytesRead != fileSize)
+	{
+		printf("ReadFile failed with %d\n", GetLastError());
+		return 0;
+	}
+
+	// done with the file
+	CloseHandle(hFile);
+
+	// create new parser object
+	HTMLParserBase* parser = new HTMLParserBase;
+
+	char baseUrl[] = "http://www.tamu.edu";		// where this page came from; needed for construction of relative links
+
+	int nLinks;
+	char* linkBuffer = parser->Parse(fileBuf, fileSize, baseUrl, (int)strlen(baseUrl), &nLinks);
+
+	// check for errors indicated by negative values
+	if (nLinks < 0)
+		nLinks = 0;
+
+	printf("Found %d links:\n", nLinks);
+
+	// print each URL; these are NULL-separated C strings
+	for (int i = 0; i < nLinks; i++)
+	{
+		printf("%s\n", linkBuffer);
+		linkBuffer += strlen(linkBuffer) + 1;
+	}
+
+	delete parser;		// this internally deletes linkBuffer
+	delete fileBuf;
+
+	return 0;
 
 
 

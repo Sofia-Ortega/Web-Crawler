@@ -11,8 +11,8 @@ class Socket
 {
 private:
 	int capacity;
-	char* buffer;
 	int size;
+	char* buffer;
 
 	char* url;
 
