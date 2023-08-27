@@ -21,6 +21,7 @@ private:
 	SOCKET sock;
 
 	string formatGetRequest(string host);
+	void resizeBuffer();
 
 public:
 	Socket(char* address);

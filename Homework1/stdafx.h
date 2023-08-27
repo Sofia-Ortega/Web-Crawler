@@ -7,3 +7,4 @@
 
 #include "HTMLParserBase.h"
 #include "Socket.h"
+#include "Url.h"

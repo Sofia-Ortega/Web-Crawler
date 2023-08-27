@@ -11,10 +11,18 @@ using std::string;
 int main() {
 	cout << "Howdy World" << endl;
 
+	string link = "http://tamu.edu:8080/cs/in:dex.php?test=1#something";
+	string link2 = "http://google.com";
+
+	Url url(link);
+	// Url url2(link2);
+
+	
+
 
 	// scheme://host[:port][/path][?query][#fragment] 
 
-	
+	/*
 	char str[] = "128.194.135.72";
 	//char str[] = "www.tamu.edu";
 	//char str[] = "www.yahoo.com";
@@ -39,6 +47,7 @@ int main() {
 	// cleanup!
 	WSACleanup();
 
+	*/
 
 	/*
 	char filename[] = "tamu2018.html";

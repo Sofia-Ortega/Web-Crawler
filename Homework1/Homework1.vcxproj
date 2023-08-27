@@ -130,11 +130,13 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="Url.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HTMLParserBase.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Url.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

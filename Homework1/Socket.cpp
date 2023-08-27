@@ -72,6 +72,15 @@ string Socket::formatGetRequest(string host) {
 
 }
 
+void Socket::resizeBuffer() {
+	char* newBuffer = new char[capacity * 2];
+	memcpy(newBuffer, buffer, size);
+
+	delete[] buffer;
+	buffer = newBuffer;
+
+	capacity *= 2;
+}
 
 void Socket::Read(void) {
 
@@ -120,16 +129,9 @@ void Socket::Read(void) {
 
 
 			// prepare buffer for next addition
-			// double the capacity
+			// doubles the capacity
 			if (size + BUFFER_SIZE >= capacity) {
-				char* newBuffer = new char[capacity * 2];
-				memcpy(newBuffer, buffer, size);
-
-				delete[] buffer;
-				buffer = newBuffer;
-
-				capacity *= 2;
-
+				resizeBuffer();
 			}
 			 
 		}
@@ -141,13 +143,6 @@ void Socket::Read(void) {
 			printf("Reading Socket error %d\n", WSAGetLastError());
 		}
 
-
-		printf("---------------------------------\n");
-		printf("final buffer contetns:\n");
-		printf("capacity: %i\n", capacity);
-		printf("size: %i\n", size);
-		printf("---------------------------------\n");
-		
 	}
 
 
