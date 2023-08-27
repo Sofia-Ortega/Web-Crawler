@@ -2,14 +2,20 @@
 
 
 Socket::Socket(char* address) {
+
+	// initialize member variables
+	this->buffer = new char[BUFFER_SIZE];
+	this->capacity = BUFFER_SIZE;
+	this->size = 0;
+
+	this->url = address;
+
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
 		WSACleanup();
 		return;
 	}
-
-	this->url = address;
 
 	// connectin to server
 	struct hostent* remote;
@@ -47,7 +53,7 @@ Socket::Socket(char* address) {
 		return;
 	}
 
-	printf("Socket succesfully connected + setup!");
+	printf("Socket succesfully connected + setup!\n");
 };
 
 Socket::~Socket() {
@@ -77,11 +83,6 @@ void Socket::Read(void) {
 		return;
 	}
 
-	const int BUFFER_SIZE = 1024;
-	char buffer[BUFFER_SIZE];
-	int bytesRead = 1;
-
-
 	FD_SET readSet;
 
 
@@ -91,26 +92,46 @@ void Socket::Read(void) {
 
 	while (true) {
 
-		memset(buffer, 0, BUFFER_SIZE - 1);
-
 		FD_ZERO(&readSet);
 		FD_SET(sock, &readSet);
 
 
 		int selectResult = select(0, &readSet, nullptr, nullptr, &timeout);
 		if (selectResult) {
-			int bytes = recv(sock, buffer, BUFFER_SIZE - 1, 0);
-			if (bytesRead > 0) {
-				printf("%s", buffer);
+
+			int bytes = recv(sock, buffer + size, BUFFER_SIZE - 1, 0);
+			size += bytes;
+
+			if (bytes > 0) {
+				// printf("%s", buffer);
+				printf("%i\n", bytes);
 			}
 			else if (bytes == 0) {
 				printf("connection closed\n");
+				// FIXME: make sure space for null terminated 
+				buffer[size] = '\0';
+				printf("%s", buffer);
 				return;
 			}
 			else {
 				printf("reading failed\n");
 				return;
 			}
+
+
+			// prepare buffer for next addition
+			// double the capacity
+			if (size + BUFFER_SIZE >= capacity) {
+				char* newBuffer = new char[capacity * 2];
+				memcpy(newBuffer, buffer, size);
+
+				delete[] buffer;
+				buffer = newBuffer;
+
+				capacity *= 2;
+
+			}
+			 
 		}
 		else if (selectResult == 0) {
 			printf("timeout exceeded\n");
@@ -119,6 +140,14 @@ void Socket::Read(void) {
 		else {
 			printf("Reading Socket error %d\n", WSAGetLastError());
 		}
+
+
+		printf("---------------------------------\n");
+		printf("final buffer contetns:\n");
+		printf("capacity: %i\n", capacity);
+		printf("size: %i\n", size);
+		printf("---------------------------------\n");
+		
 	}
 
 

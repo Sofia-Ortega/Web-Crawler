@@ -10,9 +10,11 @@ using std::string;
 class Socket
 {
 private:
-	int capacity;
-	int size;
+	const int BUFFER_SIZE = 1024;
+
 	char* buffer;
+	int size;
+	int capacity;
 
 	char* url;
 

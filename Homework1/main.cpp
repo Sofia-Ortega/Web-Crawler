@@ -14,7 +14,6 @@ int main() {
 
 	// scheme://host[:port][/path][?query][#fragment] 
 
-	/*
 	
 	char str[] = "128.194.135.72";
 	//char str[] = "www.tamu.edu";
@@ -34,14 +33,14 @@ int main() {
 	}
 
 	Socket mySock(str);
-	// mySock.Read();
+	 mySock.Read();
 
 
 	// cleanup!
 	WSACleanup();
-	*/
 
 
+	/*
 	char filename[] = "tamu2018.html";
 
 	// open html file
@@ -106,6 +105,7 @@ int main() {
 	delete fileBuf;
 
 	return 0;
+	*/
 
 
 
