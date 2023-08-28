@@ -1,14 +1,14 @@
 #include "Socket.h"
 
 
-Socket::Socket(char* address) {
+Socket::Socket(const Url& url) {
 
 	// initialize member variables
 	this->buffer = new char[BUFFER_SIZE];
 	this->capacity = BUFFER_SIZE;
 	this->size = 0;
 
-	this->url = address;
+	this->url = url;
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
@@ -24,11 +24,11 @@ Socket::Socket(char* address) {
 	struct sockaddr_in server;
 
 	// assume ip is in IP address
-	DWORD IP = inet_addr(address);
+	DWORD IP = inet_addr(url.host.c_str());
 	if (IP == INADDR_NONE) {
 		printf("inaddr none");
 		// if not valid ip, do DNS Lookup
-		remote = gethostbyname(address);
+		remote = gethostbyname(url.host.c_str());
 		if (remote == NULL) {
 			printf("Invalid string: neither FQDN nor IP address \n");
 			return;
@@ -60,11 +60,11 @@ Socket::~Socket() {
 	closesocket(sock);
 }
 
-string Socket::formatGetRequest(string host) {
+string Socket::formatGetRequest() {
 	string s;
 	s  = "GET / HTTP/1.0\r\n";
-	s += "User-agent: myTAMUcrawler/1.0\r\n";
-	s += "nHost: " + host + "\r\n";
+	s += "User-agent: SofiaSpyCrawler/1.0\r\n";
+	s += "nHost: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
 
@@ -84,7 +84,7 @@ void Socket::resizeBuffer() {
 
 void Socket::Read(void) {
 
-	const string getRequest = formatGetRequest(url);
+	const string getRequest = formatGetRequest();
 	
 	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {

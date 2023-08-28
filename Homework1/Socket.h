@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <windows.h>
 
+#include "Url.h"
+
 using std::string;
 
 class Socket
@@ -16,15 +18,15 @@ private:
 	int size;
 	int capacity;
 
-	char* url;
+	Url url;
 
 	SOCKET sock;
 
-	string formatGetRequest(string host);
+	string formatGetRequest();
 	void resizeBuffer();
 
 public:
-	Socket(char* address);
+	Socket(const Url& url);
 	~Socket();
 	void Read(void);
 

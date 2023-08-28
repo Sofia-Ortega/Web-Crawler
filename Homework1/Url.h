@@ -16,6 +16,12 @@ public:
 	string request;
 
 	Url(string urlInput);
+
+	Url();
+	Url(const Url& other);
+	Url& operator=(const Url& other);
+
+
 	
 };
 

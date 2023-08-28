@@ -103,3 +103,21 @@ Url::Url(string urlInput) {
 	*/
 
 }
+
+Url::Url() {}
+
+Url::Url(const Url& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request) {}
+
+Url& Url::operator=(const Url& other) {
+	if (this != &other) {
+		scheme = other.scheme;
+		host = other.host;
+		port = other.port;
+		path = other.path;
+		query = other.query;
+		request = other.request;
+	}
+
+	return *this;
+} 
+
