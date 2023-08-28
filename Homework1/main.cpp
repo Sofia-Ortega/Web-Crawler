@@ -14,8 +14,13 @@ int main() {
 	string link = "http://tamu.edu:8080/cs/in:dex.php?test=1#something";
 	string link2 = "http://google.com";
 	string link3 = "http://128.194.135.72";
+	string link4 = "http://www.dmoz.org";
+	string link5 = "http://www.yahoo.com";
+	string link6 = "http://s22.irl.cs.tamu.edu:990/view?test=1 ";
+	string link7 = "http://xyz.com:0";
+	string link8 = "http://xyz.com:/";
 	
-	string links[] = { link, link2, link3 };
+	string links[] = { link, link2, link3, link4, link5, link6, link8, link8};
 
 
 	try {
@@ -25,7 +30,8 @@ int main() {
 		
 	}
 	catch (const std::invalid_argument& e) {
-		printf("invalid argument");
+		printf("%s", e.what());
+
 	}
 	// Url url2(link2);
 

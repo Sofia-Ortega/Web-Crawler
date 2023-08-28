@@ -2,8 +2,6 @@
 #include <iostream>
 Url::Url(string urlInput) {
 
-	string url = urlInput;
-
 	// scheme://host[:port][/path][?query][#fragment] 
 
 	// get scheme -> remove
@@ -13,29 +11,32 @@ Url::Url(string urlInput) {
 	// find : -> port -> remove -> host
 
 
-	printf("----------------------------\n");
-	printf("Constructing link: %s\n\n", urlInput.c_str());
+	printf("URL: %s\n", urlInput.c_str());
+	printf("\tParsing URL... ");
+
+	string url = urlInput;
+
 
 	// get scheme -> remove
 	string scheme = url.substr(0, 7);
 	if (scheme != "http://") {
-		printf("Scheme not formatted correctly: %s", urlInput);
+		printf("Scheme not formatted correctly: %s", urlInput.c_str());
 		throw std::invalid_argument("Scheme not 'http://'" + urlInput);
 	}
-
-	//printf("schemmmee\n");
 
 	url = url.substr(7);
 
 
+
+	// Hashtag
 	// find # -> remove 
 	size_t hashTag = url.find_last_of('#');
 	if (hashTag != string::npos) {
 		url = url.substr(0, hashTag);
 	}
 
-	//printf("hashhhhhhhh\n");
 
+	// Query
 	// find ? -> query -> remove
 	size_t questionMark = url.find_last_of('?');
 	if (questionMark != std::string::npos) {
@@ -46,8 +47,8 @@ Url::Url(string urlInput) {
 		this->query = "";
 	}
 
-	//printf("queryyyyyyyyy\n");
 
+	// Path
 	// find / -> path -> remove
 	size_t forwardSlash = url.find_last_of('/');
 	if (forwardSlash != std::string::npos) {
@@ -58,32 +59,38 @@ Url::Url(string urlInput) {
 		this->path = "/";
 	}
 
-	//printf("/////////////\n");
-
-	// port
+	// Port
 	// find : -> port -> remove
 	size_t twoDots = url.find_last_of(':');
 	if (twoDots != std::string::npos) {
-		printf("two dots \n");
 		string portStr = url.substr(twoDots + 1);
-		this->port = stoi(portStr);
-		url = url.substr(0, twoDots);
+
+		// convert port to int
+		try {
+			this->port = stoi(portStr);
+		}
+		catch (std::exception& err) {
+			throw std::invalid_argument("failed with invalid port");
+		}
+
 
 		if (this->port == 0) {
-			throw std::invalid_argument("port must be non-zero");
+			throw std::invalid_argument("failed with invalid port");
 		}
+
+		url = url.substr(0, twoDots);
 	}
 	else {
 		this->port = 80;
 	}
 
-	//printf(":::::::::::::\n");
 
-
-	// get host
+	// Host
 	this->host = url;
 
+	printf("host %s, port %i, request %s\n", host.c_str(), port, path.c_str());
 
+	/*
 	printf("scheme: %s\n", scheme.c_str());
 	printf("host: %s\n", host.c_str());
 	printf("port: %i\n", port);
@@ -91,6 +98,6 @@ Url::Url(string urlInput) {
 	printf("query: %s\n", query.c_str());
 
 	printf("----------------------------\n");
-	
+	*/
 
 }
