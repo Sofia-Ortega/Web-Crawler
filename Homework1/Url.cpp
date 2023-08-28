@@ -20,8 +20,7 @@ Url::Url(string urlInput) {
 	// get scheme -> remove
 	string scheme = url.substr(0, 7);
 	if (scheme != "http://") {
-		printf("Scheme not formatted correctly: %s", urlInput.c_str());
-		throw std::invalid_argument("Scheme not 'http://'" + urlInput);
+		throw std::invalid_argument("failed with invalid scheme");
 	}
 
 	url = url.substr(7);
@@ -52,7 +51,7 @@ Url::Url(string urlInput) {
 	// find / -> path -> remove
 	size_t forwardSlash = url.find_last_of('/');
 	if (forwardSlash != std::string::npos) {
-		this->path = url.substr(forwardSlash + 1);
+		this->path = url.substr(forwardSlash);
 		url = url.substr(0, forwardSlash);
 	}
 	else {
@@ -88,7 +87,10 @@ Url::Url(string urlInput) {
 	// Host
 	this->host = url;
 
-	printf("host %s, port %i, request %s\n", host.c_str(), port, path.c_str());
+	// combine
+	this->request = path + query;
+
+	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
 
 	/*
 	printf("scheme: %s\n", scheme.c_str());

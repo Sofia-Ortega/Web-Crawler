@@ -13,6 +13,8 @@ public:
 	string path;
 	string query;
 	
+	string request;
+
 	Url(string urlInput);
 	
 };

@@ -17,20 +17,25 @@ int main() {
 	string link4 = "http://www.dmoz.org";
 	string link5 = "http://www.yahoo.com";
 	string link6 = "http://s22.irl.cs.tamu.edu:990/view?test=1 ";
-	string link7 = "http://xyz.com:0";
-	string link8 = "http://xyz.com:/";
+
+
+	// bad links
+	string badlink1 = "http://xyz.com:0";
+	string badlink2 = "http://xyz.com:/";
+	string badlink3 = "ftp://yahoo.com";
 	
-	string links[] = { link, link2, link3, link4, link5, link6, link8, link8};
+	string links[] = { link, link2, link3, link4, link5, link6, badlink1, badlink2, badlink3};
 
 
-	try {
-		for (auto l : links) {
+	for (auto l : links) {
+		try {
 			Url url(l);
 		}
-		
-	}
-	catch (const std::invalid_argument& e) {
-		printf("%s", e.what());
+		catch (const std::invalid_argument& e) {
+			printf("%s\n", e.what());
+		}
+
+
 
 	}
 	// Url url2(link2);
