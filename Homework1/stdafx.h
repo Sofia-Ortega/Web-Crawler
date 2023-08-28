@@ -8,3 +8,7 @@
 #include "HTMLParserBase.h"
 #include "Socket.h"
 #include "Url.h"
+
+using std::string;
+using std::cout;
+using std::endl;

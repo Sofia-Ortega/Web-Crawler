@@ -13,11 +13,22 @@ int main() {
 
 	string link = "http://tamu.edu:8080/cs/in:dex.php?test=1#something";
 	string link2 = "http://google.com";
+	string link3 = "http://128.194.135.72";
+	
+	string links[] = { link, link2, link3 };
 
-	Url url(link);
+
+	try {
+		for (auto l : links) {
+			Url url(l);
+		}
+		
+	}
+	catch (const std::invalid_argument& e) {
+		printf("invalid argument");
+	}
 	// Url url2(link2);
 
-	
 
 
 	// scheme://host[:port][/path][?query][#fragment] 
