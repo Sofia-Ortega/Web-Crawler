@@ -11,6 +11,7 @@ Socket::Socket(const Url& urlInput) {
 	this->url = Url(urlInput);
 
 	printf("\tDoing DNS... ");
+	startClock();
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
@@ -48,19 +49,21 @@ Socket::Socket(const Url& urlInput) {
 	server.sin_family = AF_INET;
 	server.sin_port = htons(url.port);
 
-	printf("found %s\n", inet_ntoa(server.sin_addr));
+	printf("done in %i ms, found %s\n", endClock(), inet_ntoa(server.sin_addr));
 
 
 
 	// connect to socket on port 80
 	printf("\t* Connecting on page...");
+	startClock();
+
 	int connectResult = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
 		printf("Connection error %d\n", WSAGetLastError());
 		return;
 	}
 
-	printf("done in %i ms\n", 0);
+	printf("done in %i ms\n", endClock());
 
 
 };
@@ -91,9 +94,19 @@ void Socket::resizeBuffer() {
 	capacity *= 2;
 }
 
+void Socket::startClock() {
+	startTime = clock();
+}
+
+int Socket::endClock() {
+	clock_t timeElapsed = clock() - startTime;
+	return (int)timeElapsed / (CLOCKS_PER_SEC / 1000);
+}
+
 void Socket::Read(void) {
 
 	printf("\tLoading... ");
+	startClock();
 
 	const string getRequest = formatGetRequest();
 	
@@ -155,7 +168,7 @@ void Socket::Read(void) {
 
 	}
 
-	printf("done in %i with %i bytes\n", 0, size);
+	printf("done in %i ms with %i bytes\n", endClock(), size);
 
 
 	// ************* Verifying Header ****************
@@ -193,6 +206,8 @@ void Socket::Read(void) {
 
 void Socket::Parse(void) {
 	printf("\t + Parsing page... ");
+	startClock();
+
 	HTMLParserBase* parser = new HTMLParserBase;
 
 	int nLinks;
@@ -216,7 +231,7 @@ void Socket::Parse(void) {
 	delete parser;
 	*/
 
-	printf("done in %i ms with %d links\n", 0, nLinks);
+	printf("done in %i ms with %d links\n", endClock(), nLinks);
 
 }
 

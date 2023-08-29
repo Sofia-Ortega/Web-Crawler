@@ -50,9 +50,14 @@ int main() {
 	//Socket urlSock2(urlStr2);
 	//urlSock2.Read();
 
+	clock_t startTime = clock();
+
 	Url urlStr3(link3);
 	Socket urlSock3(urlStr3);
 	urlSock3.Read();
+
+	clock_t timePassed = clock() - startTime;
+
 
 	//Url urlStr4(link6);
 	//Socket urlSock4(urlStr4);

@@ -4,6 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <windows.h>
+#include <ctime>
 
 #include "Url.h"
 #include "HTMLParserBase.h"
@@ -25,6 +26,11 @@ private:
 
 	string formatGetRequest();
 	void resizeBuffer();
+
+	clock_t startTime;
+
+	void startClock();
+	int endClock();
 
 public:
 	Socket(const Url& urlInput);
