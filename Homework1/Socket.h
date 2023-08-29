@@ -26,7 +26,7 @@ private:
 	void resizeBuffer();
 
 public:
-	Socket(const Url& url);
+	Socket(const Url& urlInput);
 	~Socket();
 	void Read(void);
 

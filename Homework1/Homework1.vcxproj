@@ -130,7 +130,9 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="Url.cpp" />
+    <ClCompile Include="Url.cpp">
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;_CONSOLE;%(PreprocessorDefinitions) _CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HTMLParserBase.h" />

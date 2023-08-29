@@ -26,7 +26,6 @@ Url::Url(string urlInput) {
 	url = url.substr(7);
 
 
-
 	// Hashtag
 	// find # -> remove 
 	size_t hashTag = url.find_last_of('#');
@@ -120,4 +119,23 @@ Url& Url::operator=(const Url& other) {
 
 	return *this;
 } 
+
+char* Url::getAddress() {
+	//size_t length = host.size() + 4;
+	//char* res = new char[length];
+
+	//memset(res, '\0', length);
+	//strcpy(res, "www.");
+	//strcat(res, host.c_str());
+
+	
+	size_t length = host.size();
+	char* res = new char[length];
+
+	memset(res, '\0', length);
+	strcpy(res, host.c_str());
+
+	return res;
+
+}
 

@@ -1,14 +1,16 @@
 #include "Socket.h"
 
 
-Socket::Socket(const Url& url) {
+Socket::Socket(const Url& urlInput) {
 
 	// initialize member variables
 	this->buffer = new char[BUFFER_SIZE];
 	this->capacity = BUFFER_SIZE;
 	this->size = 0;
 
-	this->url = url;
+	this->url = Url(urlInput);
+
+	printf("\tDoing DNS... ");
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
@@ -24,18 +26,19 @@ Socket::Socket(const Url& url) {
 	struct sockaddr_in server;
 
 	// assume ip is in IP address
-	DWORD IP = inet_addr(url.host.c_str());
+	char* address = url.getAddress();
+
+	DWORD IP = inet_addr(address);
 	if (IP == INADDR_NONE) {
-		printf("inaddr none");
 		// if not valid ip, do DNS Lookup
-		remote = gethostbyname(url.host.c_str());
+		remote = gethostbyname(address);
 		if (remote == NULL) {
 			printf("Invalid string: neither FQDN nor IP address \n");
 			return;
 		}
 
 		// copy into sin_addr the first IP address
-		memcpy((char*)&(server.sin_addr), remote->h_addr_list, remote->h_length);
+		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
 	}
 	else {
 		// valid IP, directly drop its binary version into sin_addr
@@ -43,17 +46,23 @@ Socket::Socket(const Url& url) {
 	}
 
 	server.sin_family = AF_INET;
-	server.sin_port = htons(80);
+	server.sin_port = htons(url.port);
 
-	printf("server");
+	printf("found %s\n", inet_ntoa(server.sin_addr));
+
+
+
 	// connect to socket on port 80
+	printf("\t* Connecting on page...");
 	int connectResult = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
 		printf("Connection error %d\n", WSAGetLastError());
 		return;
 	}
 
-	printf("Socket succesfully connected + setup!\n");
+	printf("done in %i ms\n", 0);
+
+
 };
 
 Socket::~Socket() {
@@ -84,9 +93,11 @@ void Socket::resizeBuffer() {
 
 void Socket::Read(void) {
 
+	printf("\tLoading... ");
+
 	const string getRequest = formatGetRequest();
 	
-	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
+	size_t sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
 		printf("Sending error: %d\n", WSAGetLastError());
 		return;
@@ -113,14 +124,13 @@ void Socket::Read(void) {
 
 			if (bytes > 0) {
 				// printf("%s", buffer);
-				printf("%i\n", bytes);
+				// printf("\nbytes read: %i\n", bytes);
 			}
 			else if (bytes == 0) {
-				printf("connection closed\n");
 				// FIXME: make sure space for null terminated 
+				printf("done\n");
 				buffer[size] = '\0';
-				printf("%s", buffer);
-				return;
+				break;
 			}
 			else {
 				printf("reading failed\n");
@@ -144,6 +154,11 @@ void Socket::Read(void) {
 		}
 
 	}
+
+	printf("done in %i with %i bytes\n", 0, size);
+	printf("---------------------------\n");
+	printf("%s\n", buffer);
+	printf("---------------------------\n");
 
 
 

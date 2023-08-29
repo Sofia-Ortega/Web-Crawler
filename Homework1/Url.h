@@ -21,6 +21,8 @@ public:
 	Url(const Url& other);
 	Url& operator=(const Url& other);
 
+	char* getAddress();
+
 
 	
 };
