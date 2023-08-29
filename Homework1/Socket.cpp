@@ -205,7 +205,7 @@ void Socket::Read(void) {
 }
 
 void Socket::Parse(void) {
-	printf("\t + Parsing page... ");
+	printf("\t+ Parsing page... ");
 	startClock();
 
 	HTMLParserBase* parser = new HTMLParserBase;
