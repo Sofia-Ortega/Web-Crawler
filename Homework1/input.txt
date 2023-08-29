@@ -1,0 +1,4 @@
+http://www.dmoz.org
+http://128.194.135.72
+http://www.yahoo.com
+http://www.symantec.com/verisign/ssl-certificates

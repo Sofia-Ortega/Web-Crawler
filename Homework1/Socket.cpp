@@ -120,7 +120,7 @@ void Socket::Read(void) {
 
 
 	timeval timeout;
-	timeout.tv_sec = 10; // 10 seconds b4 it timesout
+	timeout.tv_sec = 2; // 10 seconds b4 it timesout
 	timeout.tv_usec = 0;
 
 	while (true) {
@@ -163,7 +163,7 @@ void Socket::Read(void) {
 			return;
 		}
 		else {
-			printf("Reading Socket error %d\n", WSAGetLastError());
+			printf("Reading Socket error %d\n", selectResult, WSAGetLastError());
 		}
 
 	}
