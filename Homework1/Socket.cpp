@@ -16,7 +16,7 @@ Socket::Socket(const Url& urlInput) {
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
-		WSACleanup();
+		throw std::exception();
 		return;
 	}
 
@@ -34,7 +34,7 @@ Socket::Socket(const Url& urlInput) {
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
 		if (remote == NULL) {
-			printf("Invalid string: neither FQDN nor IP address \n");
+			throw std::exception("Invalid string: neither FQDN nor IP address \n");
 			return;
 		}
 
@@ -60,11 +60,10 @@ Socket::Socket(const Url& urlInput) {
 	int connectResult = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
 		printf("Connection error %d\n", WSAGetLastError());
-		return;
+		throw std::exception();
 	}
 
 	printf("done in %i ms\n", endClock());
-
 
 };
 
@@ -74,11 +73,14 @@ Socket::~Socket() {
 
 string Socket::formatGetRequest() {
 	string s;
-	s  = "GET / HTTP/1.0\r\n";
+
+	s  = "GET " + url.request + " HTTP/1.0\r\n";
 	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
-	s += "nHost: " + url.host + "\r\n";
+	s += "Host: www." + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
+
+	printf("\n\nGet request \n%s\n\n", s.c_str());
 
 	return s;
 
@@ -193,8 +195,26 @@ void Socket::Read(void) {
 
 	printf(" status code %i\n", statusCode);
 
+	if (statusCode == 200) {
+		printf("++++++++++++++++++++++++++++++++++++++++++++ 200 ++++++++++++++++++++++++++++++++++");
+	}
+	else if (statusCode == 400) {
+		printf("}||||||||||||||||||||||||||||||||||||||||| 400 |||||||||||||||||||||||||||||||||||||||||||||||||");
+	}
 
 
+	// ***************** Print Header ****************
+	char* angleBracket = strchr(buffer, '<');
+	char* header;
+	if (!angleBracket) {
+		printf("%s", buffer);
+		return;
+	}
+	else {
+		*(angleBracket - 1) = '\0';
+		header = buffer;
+		buffer = angleBracket;
+	}
 
 	// ***************** Parse ********************
 	if (statusCode == 200) {
@@ -203,15 +223,13 @@ void Socket::Read(void) {
 
 
 	// ***************** Print Header ****************
-	char* angleBracket = strchr(buffer, '<');
-	*angleBracket = '\0';
-
-
-
-
-
 	printf("---------------------------\n");
-	printf("%s\n", buffer);
+	printf("%s\n", header);
+
+
+
+
+	//printf("%s\n", buffer);
 }
 
 void Socket::Parse(void) {

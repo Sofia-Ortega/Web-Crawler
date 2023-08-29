@@ -49,7 +49,7 @@ Url::Url(string urlInput) {
 
 	// Path
 	// find / -> path -> remove
-	size_t forwardSlash = url.find_last_of('/');
+	size_t forwardSlash = url.find('/');
 	if (forwardSlash != std::string::npos) {
 		this->path = url.substr(forwardSlash);
 		url = url.substr(0, forwardSlash);
@@ -93,6 +93,11 @@ Url::Url(string urlInput) {
 	if (query != "") {
 		request += "?" + query;
 	}
+
+	if (request.at(request.size() - 1) != '/') {
+		request += "/";
+	}
+
 
 	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
 
