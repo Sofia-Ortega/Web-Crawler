@@ -173,12 +173,22 @@ void Socket::Read(void) {
 
 
 
+	// ***************** Parse ********************
 	if (statusCode == 200) {
 		Parse();
 	}
 
 
+	// ***************** Print Header ****************
+	char* angleBracket = strchr(buffer, '<');
+	*angleBracket = '\0';
+
+
+
+
+
 	printf("---------------------------\n");
+	printf("%s\n", buffer);
 }
 
 void Socket::Parse(void) {
@@ -194,6 +204,8 @@ void Socket::Parse(void) {
 		printf("Parsing error\n");
 		nLinks = 0;
 	}
+
+	/*
 	printf("Found %d links:\n", nLinks);
 
 	for (int i = 0; i < nLinks; i++) {
@@ -202,6 +214,7 @@ void Socket::Parse(void) {
 	}
 
 	delete parser;
+	*/
 
 	printf("done in %i ms with %d links\n", 0, nLinks);
 
