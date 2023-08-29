@@ -157,13 +157,34 @@ void Socket::Read(void) {
 
 	printf("done in %i with %i bytes\n", 0, size);
 	printf("---------------------------\n");
-	printf("%s\n", buffer);
+	// printf("%s\n", buffer);
 	printf("---------------------------\n");
 
+	Parse();
+}
 
+void Socket::Parse(void) {
+	printf("parse!\n");
+	HTMLParserBase* parser = new HTMLParserBase;
 
+	int nLinks;
+	char* baseUrl = url.getBaseUrl();
+	char* linkBuffer = parser->Parse(buffer, size + 1, baseUrl, (int)strlen(baseUrl), &nLinks);
 
+	if (nLinks < 0) {
 
+		printf("Parsing error\n");
+		nLinks = 0;
+	}
+	printf("Found %d links:\n", nLinks);
 
+	for (int i = 0; i < nLinks; i++) {
+		printf("%s\n", linkBuffer);
+		linkBuffer += strlen(linkBuffer) + 1;
+	}
+
+	delete parser;
+	return;
 
 }
+

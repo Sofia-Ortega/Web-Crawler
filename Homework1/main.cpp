@@ -45,23 +45,22 @@ int main() {
 	//Socket urlSock(urlHere);
 	//urlSock.Read();
 
-	string str2 = "http://google.com";
-	Url urlStr2(str2);
-	Socket urlSock2(urlStr2);
-	urlSock2.Read();
+	//string str2 = "http://google.com";
+	//Url urlStr2(str2);
+	//Socket urlSock2(urlStr2);
+	//urlSock2.Read();
 
 	Url urlStr3(link3);
 	Socket urlSock3(urlStr3);
 	urlSock3.Read();
 
-	Url urlStr4(link6);
-	Socket urlSock4(urlStr4);
-	urlSock4.Read();
+	//Url urlStr4(link6);
+	//Socket urlSock4(urlStr4);
+	//urlSock4.Read();
 
 
 	// cleanup!
 	WSACleanup();
-
 
 	/*
 	char filename[] = "tamu2018.html";

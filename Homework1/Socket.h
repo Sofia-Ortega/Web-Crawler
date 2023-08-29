@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include "Url.h"
+#include "HTMLParserBase.h"
 
 using std::string;
 
@@ -29,6 +30,7 @@ public:
 	Socket(const Url& urlInput);
 	~Socket();
 	void Read(void);
+	void Parse(void);
 
 };
 

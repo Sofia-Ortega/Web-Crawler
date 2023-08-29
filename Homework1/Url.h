@@ -14,6 +14,7 @@ public:
 	string query;
 	
 	string request;
+	string baseUrl;
 
 	Url(string urlInput);
 
@@ -22,6 +23,7 @@ public:
 	Url& operator=(const Url& other);
 
 	char* getAddress();
+	char* getBaseUrl();
 
 
 	

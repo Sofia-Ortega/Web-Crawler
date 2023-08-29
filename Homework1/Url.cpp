@@ -14,6 +14,7 @@ Url::Url(string urlInput) {
 	printf("URL: %s\n", urlInput.c_str());
 	printf("\tParsing URL... ");
 
+	baseUrl = urlInput;
 	string url = urlInput;
 
 
@@ -109,7 +110,7 @@ Url::Url(string urlInput) {
 
 Url::Url() {}
 
-Url::Url(const Url& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request) {}
+Url::Url(const Url& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {}
 
 Url& Url::operator=(const Url& other) {
 	if (this != &other) {
@@ -119,27 +120,35 @@ Url& Url::operator=(const Url& other) {
 		path = other.path;
 		query = other.query;
 		request = other.request;
+		baseUrl = other.baseUrl;
 	}
 
 	return *this;
 } 
 
 char* Url::getAddress() {
-	//size_t length = host.size() + 4;
-	//char* res = new char[length];
 
-	//memset(res, '\0', length);
-	//strcpy(res, "www.");
-	//strcat(res, host.c_str());
-
-	
 	size_t length = host.size();
 	char* res = new char[length];
 
 	memset(res, '\0', length);
 	strcpy(res, host.c_str());
 
+	printf("THE RES: %s, %s \n\n", res, host.c_str());
 	return res;
 
 }
 
+char* Url::getBaseUrl() {
+
+	size_t length = baseUrl.size();
+	char* res = new char[length];
+
+	memset(res, '\0', length);
+	strcpy(res, baseUrl.c_str());
+
+	printf("THE RES: %s, %s \n\n", res, baseUrl.c_str());
+
+	return res;
+
+}
