@@ -33,14 +33,15 @@ int main() {
 		try {
 			//link = "http://www.symantec.com/verisign/ssl-certificates";
 		 	//link = "http://128.194.135.72";
-			//link = "http://aburningpatience.blogspot.com/2012_01_01_archive.html";
+			// link = "http://aburningpatience.blogspot.com/2012_01_01_archive.html";
 			// link = "http://www.symantec.com/verisign/ssl-certificates";
+			// link = "http://360.ch/blog/magazine/2014/08/cadeaux-fiscaux-aux-guerisseurs-de-gays/";
+			//link = "http://youtube.com/user/USIMLS";
 
-			link = "http://youtube.com/user/USIMLS";
 			Url url(link);
 			Socket sock(url);
 			sock.Read();
-			break;
+			//break;
 		}
 		catch (const std::exception& e) {
 			printf("[ERROR] %s", e.what());

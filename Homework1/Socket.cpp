@@ -69,6 +69,8 @@ Socket::Socket(const Url& urlInput) {
 
 Socket::~Socket() {
 	closesocket(sock);
+	if(buffer) 
+		delete[] buffer;
 }
 
 string Socket::formatGetRequest() {
@@ -76,7 +78,7 @@ string Socket::formatGetRequest() {
 
 	s  = "GET " + url.request + " HTTP/1.0\r\n";
 	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
-	s += "Host: www." + url.host + "\r\n";
+	s += "Host: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
 
@@ -226,10 +228,10 @@ void Socket::Read(void) {
 	printf("---------------------------\n");
 	printf("%s\n", header);
 
-
-
+	
 
 	//printf("%s\n", buffer);
+	buffer = header;
 }
 
 void Socket::Parse(void) {

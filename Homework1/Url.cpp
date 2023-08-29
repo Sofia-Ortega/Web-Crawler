@@ -92,11 +92,12 @@ Url::Url(string urlInput) {
 
 	if (query != "") {
 		request += "?" + query;
+
 	}
 
-	if (request.at(request.size() - 1) != '/') {
-		request += "/";
-	}
+	//if (request.at(request.size() - 1) != '/') {
+	//	request += "/";
+	//}
 
 
 	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
