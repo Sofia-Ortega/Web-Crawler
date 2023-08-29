@@ -109,7 +109,7 @@ void Socket::Read(void) {
 	startClock();
 
 	const string getRequest = formatGetRequest();
-	
+
 	size_t sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
 		printf("Sending error: %d\n", WSAGetLastError());
@@ -146,7 +146,7 @@ void Socket::Read(void) {
 				break;
 			}
 			else {
-				printf("reading failed\n");
+				printf("reading failed in recv() %d\n", WSAGetLastError());
 				return;
 			}
 
@@ -156,7 +156,7 @@ void Socket::Read(void) {
 			if (size + BUFFER_SIZE >= capacity) {
 				resizeBuffer();
 			}
-			 
+
 		}
 		else if (selectResult == 0) {
 			printf("timeout exceeded\n");
@@ -173,11 +173,21 @@ void Socket::Read(void) {
 
 	// ************* Verifying Header ****************
 	printf("\tVerifying header... ");
+
+	char httpHeader[] = { 'H', 'T', 'T', 'P', '\0' };
+	for (int i = 0; i < 4; i++) {
+		if (buffer[i] != httpHeader[i]) {
+			printf("Non-Http Reply received - abort\n");
+			return;
+		}
+	}
+
 	char* numStr = new char[4];
 	for (int i = 9; i < 12; i++) {
 		numStr[i - 9] = buffer[i];
 	}
 	numStr[3] = '\0';
+
 
 	int statusCode = atoi(numStr);
 
