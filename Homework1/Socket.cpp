@@ -72,7 +72,7 @@ Socket::~Socket() {
 string Socket::formatGetRequest() {
 	string s;
 	s  = "GET / HTTP/1.0\r\n";
-	s += "User-agent: SofiaSpyCrawler/1.0\r\n";
+	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
 	s += "nHost: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
@@ -128,8 +128,8 @@ void Socket::Read(void) {
 			}
 			else if (bytes == 0) {
 				// FIXME: make sure space for null terminated 
-				printf("done\n");
 				buffer[size] = '\0';
+				size++;
 				break;
 			}
 			else {
@@ -156,15 +156,33 @@ void Socket::Read(void) {
 	}
 
 	printf("done in %i with %i bytes\n", 0, size);
-	printf("---------------------------\n");
-	// printf("%s\n", buffer);
-	printf("---------------------------\n");
 
-	Parse();
+
+	// ************* Verifying Header ****************
+	printf("\tVerifying header... ");
+	char* numStr = new char[4];
+	for (int i = 9; i < 12; i++) {
+		numStr[i - 9] = buffer[i];
+	}
+	numStr[3] = '\0';
+
+	int statusCode = atoi(numStr);
+
+	printf(" status code %i\n", statusCode);
+
+
+
+
+	if (statusCode == 200) {
+		Parse();
+	}
+
+
+	printf("---------------------------\n");
 }
 
 void Socket::Parse(void) {
-	printf("parse!\n");
+	printf("\t + Parsing page... ");
 	HTMLParserBase* parser = new HTMLParserBase;
 
 	int nLinks;
@@ -184,7 +202,8 @@ void Socket::Parse(void) {
 	}
 
 	delete parser;
-	return;
+
+	printf("done in %i ms with %d links\n", 0, nLinks);
 
 }
 

@@ -96,15 +96,6 @@ Url::Url(string urlInput) {
 
 	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
 
-	/*
-	printf("scheme: %s\n", scheme.c_str());
-	printf("host: %s\n", host.c_str());
-	printf("port: %i\n", port);
-	printf("path: %s\n", path.c_str());
-	printf("query: %s\n", query.c_str());
-
-	printf("----------------------------\n");
-	*/
 
 }
 
@@ -134,7 +125,6 @@ char* Url::getAddress() {
 	memset(res, '\0', length);
 	strcpy(res, host.c_str());
 
-	printf("THE RES: %s, %s \n\n", res, host.c_str());
 	return res;
 
 }
@@ -146,8 +136,6 @@ char* Url::getBaseUrl() {
 
 	memset(res, '\0', length);
 	strcpy(res, baseUrl.c_str());
-
-	printf("THE RES: %s, %s \n\n", res, baseUrl.c_str());
 
 	return res;
 
