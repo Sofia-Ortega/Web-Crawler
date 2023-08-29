@@ -87,7 +87,11 @@ Url::Url(string urlInput) {
 	this->host = url;
 
 	// combine
-	this->request = path + query;
+	this->request = path;
+
+	if (query != "") {
+		request += "?" + query;
+	}
 
 	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
 

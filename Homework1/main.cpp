@@ -27,52 +27,6 @@ int main() {
 	string links[] = { link, link2, link3, link4, link5, link6, badlink1, badlink2, badlink3};
 
 
-	/*
-	for (auto l : links) {
-		try {
-			Url url(l);
-		}
-		catch (const std::invalid_argument& e) {
-			printf("%s\n", e.what());
-		}
-	}
-
-	*/
-/*
-
-	// *************** Setup **********************
-	WSADATA wsadata;
-
-	// initialize winsocket
-	WORD wVersionRequested = MAKEWORD(2, 2);
-	if (WSAStartup(wVersionRequested, &wsadata) != 0) {
-		printf("WSAStartup error %d\n", WSAGetLastError());
-		WSACleanup();
-		return -1;
-	}
-
-	// ************** Sockets ********************
-	string here = "http://www.tamu.edu";
-	string here2 = "http://128.194.135.72";
-	Url url(here);
-	Socket mySock(url);
-	// mySock.Read();
-
-
-	// *************** Clean up! *******************
-	WSACleanup();
-
-*/
-
-
-	// scheme://host[:port][/path][?query][#fragment] 
-
-	// char str[] = "128.194.135.72";
-	// char str[] = "www.tamu.edu";
-	//char str[] = "www.yahoo.com";
-	// char str[] = "https://irl.cse.tamu.edu/";
-	// char str[] = "irl.cse.tamu.edu";
-
 
 	WSADATA wsadata;
 
@@ -84,17 +38,25 @@ int main() {
 		return -1;
 	}
 	
-	string str = "http://www.dmoz.org";
-	Url urlHere(str);
+	//string str = "http://www.dmoz.org";
+	//Url urlHere(str);
 
 
-	Socket urlSock(urlHere);
-	urlSock.Read();
+	//Socket urlSock(urlHere);
+	//urlSock.Read();
 
 	string str2 = "http://google.com";
 	Url urlStr2(str2);
 	Socket urlSock2(urlStr2);
 	urlSock2.Read();
+
+	Url urlStr3(link3);
+	Socket urlSock3(urlStr3);
+	urlSock3.Read();
+
+	Url urlStr4(link6);
+	Socket urlSock4(urlStr4);
+	urlSock4.Read();
 
 
 	// cleanup!
