@@ -1,4 +1,11 @@
 
+/*
+
+Name: Sofia Ortega
+Class: CSCE 463-500
+Semester: Fall 2023
+
+*/
 
 #include "stdafx.h"
 
@@ -8,8 +15,23 @@ using std::cout;
 using std::endl;
 using std::string;
 
-int main() {
-	cout << "Howdy World" << endl;
+int main(int argc, char* argv[]) {
+
+	bool threading = false;
+
+	if (argc == 3 && atoi(argv[1]) != 1) {
+		threading = true;
+	}
+	else if (argc == 2) {
+		threading = false;
+	}
+	else {
+		printf("[ERROR] Incorrect input");
+		return -1;
+
+	}
+
+
 
 	WSADATA wsaData;
 
@@ -21,6 +43,24 @@ int main() {
 		return -1;
 	}
 
+
+
+	// ------------ From command line -------------
+	
+	string link = argv[1];
+	try {
+		Url url(link);
+		Socket sock(url);
+		sock.Read();
+	}
+	catch (const std::exception& e) {
+		printf("[ERROR] %s", e.what());
+	}
+
+
+
+	// ------------ From file ------------------
+	/*
 	std::ifstream inputFile("input.txt");
 
 	if (!inputFile.is_open()) {
@@ -31,22 +71,15 @@ int main() {
 	string link;
 	while (std::getline(inputFile, link)) {
 		try {
-			//link = "http://www.symantec.com/verisign/ssl-certificates";
-		 	//link = "http://128.194.135.72";
-			// link = "http://aburningpatience.blogspot.com/2012_01_01_archive.html";
-			// link = "http://www.symantec.com/verisign/ssl-certificates";
-			// link = "http://360.ch/blog/magazine/2014/08/cadeaux-fiscaux-aux-guerisseurs-de-gays/";
-			//link = "http://youtube.com/user/USIMLS";
-
 			Url url(link);
 			Socket sock(url);
 			sock.Read();
-			//break;
 		}
 		catch (const std::exception& e) {
 			printf("[ERROR] %s", e.what());
 		}
 	}
+	*/
 
 	
 	// cleanup!

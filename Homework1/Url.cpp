@@ -68,7 +68,7 @@ Url::Url(string urlInput) {
 		try {
 			this->port = stoi(portStr);
 		}
-		catch (std::exception& err) {
+		catch (const std::exception& err) {
 			throw std::invalid_argument("failed with invalid port");
 		}
 
@@ -125,11 +125,11 @@ Url& Url::operator=(const Url& other) {
 
 char* Url::getAddress() {
 
-	size_t length = host.size();
+	size_t length = host.size() + 1;
 	char* res = new char[length];
 
 	memset(res, '\0', length);
-	strcpy(res, host.c_str());
+	strcpy_s(res, length, host.c_str());
 
 	return res;
 
@@ -137,11 +137,11 @@ char* Url::getAddress() {
 
 char* Url::getBaseUrl() {
 
-	size_t length = baseUrl.size();
+	size_t length = baseUrl.size() + 1;
 	char* res = new char[length];
 
 	memset(res, '\0', length);
-	strcpy(res, baseUrl.c_str());
+	strcpy_s(res, length, baseUrl.c_str());
 
 	return res;
 

@@ -54,7 +54,7 @@ Socket::Socket(const Url& urlInput) {
 
 
 	// connect to socket on port 80
-	printf("\t* Connecting on page...");
+	printf("      * Connecting on page...");
 	startClock();
 
 	int connectResult = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
@@ -81,8 +81,6 @@ string Socket::formatGetRequest() {
 	s += "Host: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
-
-	printf("\n\nGet request \n%s\n\n", s.c_str());
 
 	return s;
 
@@ -114,7 +112,7 @@ void Socket::Read(void) {
 
 	const string getRequest = formatGetRequest();
 
-	size_t sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
+	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
 		printf("Sending error: %d\n", WSAGetLastError());
 		return;
@@ -167,7 +165,8 @@ void Socket::Read(void) {
 			return;
 		}
 		else {
-			printf("Reading Socket error %d\n", selectResult, WSAGetLastError());
+			printf("Reading Socket error %i, %i\n", selectResult, WSAGetLastError());
+			return;
 		}
 
 	}
@@ -197,29 +196,28 @@ void Socket::Read(void) {
 
 	printf(" status code %i\n", statusCode);
 
-	if (statusCode == 200) {
-		printf("++++++++++++++++++++++++++++++++++++++++++++ 200 ++++++++++++++++++++++++++++++++++");
-	}
-	else if (statusCode == 400) {
-		printf("}||||||||||||||||||||||||||||||||||||||||| 400 |||||||||||||||||||||||||||||||||||||||||||||||||");
-	}
-
 
 	// ***************** Print Header ****************
-	char* angleBracket = strchr(buffer, '<');
+	char endHeaderCharacters[] = "\r\n\r\n";
+	char* endHeader = strstr(buffer, endHeaderCharacters);
 	char* header;
-	if (!angleBracket) {
+	if (!endHeader) {
+		printf("---------------------------\n");
 		printf("%s", buffer);
 		return;
 	}
 	else {
-		*(angleBracket - 1) = '\0';
+		*(endHeader - 1) = '\0';
 		header = buffer;
-		buffer = angleBracket;
+		buffer = endHeader;
 	}
 
 	// ***************** Parse ********************
 	if (statusCode == 200) {
+		//char temp = buffer[1000];
+		//buffer[1000] = '\0';
+		//printf("\n\n\n%s\n\n\n", buffer);
+		//buffer[1000] = temp;
 		Parse();
 	}
 
@@ -235,7 +233,7 @@ void Socket::Read(void) {
 }
 
 void Socket::Parse(void) {
-	printf("\t+ Parsing page... ");
+	printf("      + Parsing page... ");
 	startClock();
 
 	HTMLParserBase* parser = new HTMLParserBase;
