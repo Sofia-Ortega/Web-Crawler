@@ -17,20 +17,13 @@ using std::string;
 
 int main(int argc, char* argv[]) {
 
-	bool threading = false;
 
 	if (argc == 3 && atoi(argv[1]) != 1) {
-		threading = true;
-	}
-	else if (argc == 2) {
-		threading = false;
-	}
-	else {
 		printf("[ERROR] Incorrect input");
 		return -1;
+	} 
 
-	}
-
+	string inputFileName = argv[2];
 
 
 	WSADATA wsaData;
@@ -47,6 +40,7 @@ int main(int argc, char* argv[]) {
 
 	// ------------ From command line -------------
 	
+	/*
 	string link = argv[1];
 	try {
 		Url url(link);
@@ -57,11 +51,11 @@ int main(int argc, char* argv[]) {
 		printf("[ERROR] %s", e.what());
 	}
 
+	*/
 
 
 	// ------------ From file ------------------
-	/*
-	std::ifstream inputFile("input.txt");
+	std::ifstream inputFile(inputFileName);
 
 	if (!inputFile.is_open()) {
 		printf("[ERROR] Can't open file\n");
@@ -72,6 +66,10 @@ int main(int argc, char* argv[]) {
 	while (std::getline(inputFile, link)) {
 		try {
 			Url url(link);
+
+
+
+
 			Socket sock(url);
 			sock.Read();
 		}
@@ -79,7 +77,6 @@ int main(int argc, char* argv[]) {
 			printf("[ERROR] %s", e.what());
 		}
 	}
-	*/
 
 	
 	// cleanup!
