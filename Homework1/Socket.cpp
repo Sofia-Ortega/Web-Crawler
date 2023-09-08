@@ -1,5 +1,7 @@
 #include "Socket.h"
 
+set<DWORD> Socket::seenIPs;
+set<string> Socket::seenHosts;
 
 Socket::Socket(const Url& urlInput) {
 
@@ -31,6 +33,15 @@ Socket::Socket(const Url& urlInput) {
 
 	DWORD IP = inet_addr(address);
 	if (IP == INADDR_NONE) {
+
+		// check if host duplicate
+		printf("\tChecking host uniqueness...");
+		auto setResult = seenHosts.insert(url.host);
+		if (setResult.second == false) {
+			throw std::exception("failed - Duplicate Host");
+		}
+		printf("passed\n");
+
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
 		if (remote == NULL) {
@@ -42,7 +53,17 @@ Socket::Socket(const Url& urlInput) {
 		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
 	}
 	else {
-		// valid IP, directly drop its binary version into sin_addr
+		// valid IP
+		// check duplicate ip
+		printf("\tChecking IP uniqueness...");
+		auto setResult = seenIPs.insert(IP);
+		if (setResult.second == false) {
+			throw std::exception("failed - Duplicate IP");
+			return;
+		}
+		printf("passed\n");
+
+		// directly drop its binary version into sin_addr
 		server.sin_addr.S_un.S_addr = IP;
 	}
 
@@ -73,10 +94,15 @@ Socket::~Socket() {
 		delete[] buffer;
 }
 
-string Socket::formatGetRequest() {
+string Socket::formatGetRequest(bool getRobot = false) {
 	string s;
 
-	s  = "GET " + url.request + " HTTP/1.0\r\n";
+	string request = url.request;
+	if (getRobot) {
+		request = "/robots.txt";
+	}
+
+	s  = "GET " + request + " HTTP/1.0\r\n";
 	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
 	s += "Host: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
@@ -96,6 +122,11 @@ void Socket::resizeBuffer() {
 	capacity *= 2;
 }
 
+void Socket::clearBuffer() {
+	size = 0;
+	buffer[0] = '\0';
+}
+
 void Socket::startClock() {
 	startTime = clock();
 }
@@ -105,14 +136,9 @@ int Socket::endClock() {
 	return (int)timeElapsed / (CLOCKS_PER_SEC / 1000);
 }
 
-void Socket::Read(void) {
-
-	printf("\tLoading... ");
-	startClock();
-
-	const string getRequest = formatGetRequest();
-
-	int sendResult = send(sock, getRequest.c_str(), getRequest.size(), 0);
+void Socket::readRequestIntoBuffer(string getRequest) {
+	
+	size_t sendResult = send(sock, getRequest.c_str(), (int)getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
 		printf("Sending error: %d\n", WSAGetLastError());
 		return;
@@ -170,6 +196,33 @@ void Socket::Read(void) {
 		}
 
 	}
+}
+
+void Socket::Read(void) {
+
+
+	printf("Connecting on robots...");
+	startClock();
+
+	const string getRobotRequest = formatGetRequest(true);
+	readRequestIntoBuffer(getRobotRequest);
+
+	char* response = buffer;
+	printf("Robot response: %s", response);
+
+
+
+	printf("done in %i ms with %i bytes\n", endClock(), size);
+	return; // FIXME!
+
+	clearBuffer();
+
+	printf("\tLoading... ");
+	startClock();
+
+	const string getRequest = formatGetRequest();
+	readRequestIntoBuffer(getRequest);
+
 
 	printf("done in %i ms with %i bytes\n", endClock(), size);
 

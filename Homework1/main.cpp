@@ -66,10 +66,6 @@ int main(int argc, char* argv[]) {
 	while (std::getline(inputFile, link)) {
 		try {
 			Url url(link);
-
-
-
-
 			Socket sock(url);
 			sock.Read();
 		}
