@@ -25,6 +25,8 @@ private:
 	int size;
 	int capacity;
 
+	bool robotsNotAllowed;
+
 	Url url;
 
 	SOCKET sock;
@@ -42,7 +44,7 @@ private:
 	void startClock();
 	int endClock();
 
-	void readRequestIntoBuffer(string getRequest);
+	int readRequestIntoBuffer(string getRequest, SOCKET mySock);
 
 public:
 	Socket(const Url& urlInput);

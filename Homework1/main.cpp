@@ -23,6 +23,11 @@ int main(int argc, char* argv[]) {
 		return -1;
 	} 
 
+	bool threading = true;
+	if (argc == 2) {
+		threading = false;
+	}
+	
 	string inputFileName = argv[2];
 
 
@@ -40,18 +45,19 @@ int main(int argc, char* argv[]) {
 
 	// ------------ From command line -------------
 	
-	/*
-	string link = argv[1];
-	try {
-		Url url(link);
-		Socket sock(url);
-		sock.Read();
-	}
-	catch (const std::exception& e) {
-		printf("[ERROR] %s", e.what());
-	}
+	if (!threading) {
+		string link = argv[1];
+		try {
+			Url url(link);
+			Socket sock(url);
+			sock.Read();
+		}
+		catch (const std::exception& e) {
+			printf("[ERROR] %s", e.what());
+		}
 
-	*/
+		return 1;
+	}
 
 
 	// ------------ From file ------------------
@@ -66,11 +72,17 @@ int main(int argc, char* argv[]) {
 	while (std::getline(inputFile, link)) {
 		try {
 			Url url(link);
+
+			// make url robot.txt
+			// Socket sock  -> connect to robot.url
+			// get status code
+
 			Socket sock(url);
 			sock.Read();
 		}
 		catch (const std::exception& e) {
-			printf("[ERROR] %s", e.what());
+			if(e.what() != "Unknown exception")
+				printf("[ERROR] %s", e.what());
 		}
 	}
 

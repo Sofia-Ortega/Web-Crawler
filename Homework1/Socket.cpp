@@ -23,6 +23,13 @@ Socket::Socket(const Url& urlInput) {
 	printf("\tDoing DNS... ");
 	startClock();
 
+	SOCKET roboSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (roboSock == INVALID_SOCKET) {
+		printf("socket() generated error %d\n", WSAGetLastError());
+		throw std::exception();
+		return;
+	}
+
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
@@ -78,12 +85,58 @@ Socket::Socket(const Url& urlInput) {
 	printf("passed\n");
 
 
-	// connect to socket on port 80
+	// connect to robot page
+	printf("\tConnecting on robots... ");
+	startClock();
+
+	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
+	if (connectResult == SOCKET_ERROR) {
+		printf("Connection error %d\n", WSAGetLastError());
+		throw std::exception();
+		return;
+	}
+	printf("done in %i ms\n", endClock());
+
+
+	// read robot.txt
+	printf("\tLoading...");
+	startClock();
+
+	int readResult = readRequestIntoBuffer(formatRobotRequest(), roboSock);
+	if (readResult == -1) {
+		throw std::exception();
+		return;
+	}
+
+	printf("done in %i ms with %i bytes\n", endClock(), size);
+
+	closesocket(roboSock);
+
+
+	// check status header
+	printf("\tVerifying header... ");
+	int statusCode = getStatusCode();
+	printf("status code %i\n", statusCode);
+
+
+	// check if robots.txt exists
+	if (statusCode >= 400 && statusCode <= 499) {
+		robotsNotAllowed = false;
+	}
+	else {
+		robotsNotAllowed = true;
+		return;
+	}
+
+
+
+
+	// connect to socket on port 
 	printf("      * Connecting on page...");
 	startClock();
 
-	int connectResult = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
-	if (connectResult == SOCKET_ERROR) {
+	int connectResult2 = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
+	if (connectResult2 == SOCKET_ERROR) {
 		printf("Connection error %d\n", WSAGetLastError());
 		throw std::exception();
 	}
@@ -124,8 +177,28 @@ string Socket::formatRobotRequest() {
 	return s;
 }
 
-int getStatusCode() {
-	return 1;
+int Socket::getStatusCode() {
+
+	// ************* Verifying Header ****************
+
+	char httpHeader[] = { 'H', 'T', 'T', 'P', '\0' };
+	for (int i = 0; i < 4; i++) {
+		if (buffer[i] != httpHeader[i]) {
+			printf("Non-Http Reply received - abort\n");
+			return -1;
+		}
+	}
+
+	char* numStr = new char[4];
+	for (int i = 9; i < 12; i++) {
+		numStr[i - 9] = buffer[i];
+	}
+	numStr[3] = '\0';
+
+
+	int statusCode = atoi(numStr);
+
+	return statusCode;
 }
 
 void Socket::resizeBuffer() {
@@ -152,31 +225,31 @@ int Socket::endClock() {
 	return (int)timeElapsed / (CLOCKS_PER_SEC / 1000);
 }
 
-void Socket::readRequestIntoBuffer(string getRequest) {
+int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock) {
 	
-	size_t sendResult = send(sock, getRequest.c_str(), (int)getRequest.size(), 0);
+	size_t sendResult = send(mySock, getRequest.c_str(), (int)getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
 		printf("Sending error: %d\n", WSAGetLastError());
-		return;
+		return -1;
 	}
 
 	FD_SET readSet;
 
 
 	timeval timeout;
-	timeout.tv_sec = 2; // 10 seconds b4 it timesout
+	timeout.tv_sec = 3; // 10 seconds b4 it timesout
 	timeout.tv_usec = 0;
 
 	while (true) {
 
 		FD_ZERO(&readSet);
-		FD_SET(sock, &readSet);
+		FD_SET(mySock, &readSet);
 
 
 		int selectResult = select(0, &readSet, nullptr, nullptr, &timeout);
 		if (selectResult) {
 
-			int bytes = recv(sock, buffer + size, BUFFER_SIZE - 1, 0);
+			int bytes = recv(mySock, buffer + size, BUFFER_SIZE - 1, 0);
 			size += bytes;
 
 			if (bytes > 0) {
@@ -191,7 +264,7 @@ void Socket::readRequestIntoBuffer(string getRequest) {
 			}
 			else {
 				printf("reading failed in recv() %d\n", WSAGetLastError());
-				return;
+				return -1;
 			}
 
 
@@ -204,31 +277,18 @@ void Socket::readRequestIntoBuffer(string getRequest) {
 		}
 		else if (selectResult == 0) {
 			printf("timeout exceeded\n");
-			return;
+			return -1;
 		}
 		else {
 			printf("Reading Socket error %i, %i\n", selectResult, WSAGetLastError());
-			return;
+			return -1;
 		}
 
 	}
 }
 
 void Socket::Read(void) {
-
-
-	printf("Connecting on robots...");
-	startClock();
-
-	readRequestIntoBuffer(formatRobotRequest());
-
-	char* response = buffer;
-	printf("\n\n\nRobot response: \n%s", response);
-
-
-
-	printf("done in %i ms with %i bytes\n", endClock(), size);
-	return; // FIXME!
+	if (robotsNotAllowed) return;
 
 	clearBuffer();
 
@@ -236,31 +296,16 @@ void Socket::Read(void) {
 	startClock();
 
 	const string getRequest = formatGetRequest();
-	readRequestIntoBuffer(getRequest);
+	readRequestIntoBuffer(getRequest, sock);
 
 
 	printf("done in %i ms with %i bytes\n", endClock(), size);
 
 
-	// ************* Verifying Header ****************
+	// Status Code
 	printf("\tVerifying header... ");
-
-	char httpHeader[] = { 'H', 'T', 'T', 'P', '\0' };
-	for (int i = 0; i < 4; i++) {
-		if (buffer[i] != httpHeader[i]) {
-			printf("Non-Http Reply received - abort\n");
-			return;
-		}
-	}
-
-	char* numStr = new char[4];
-	for (int i = 9; i < 12; i++) {
-		numStr[i - 9] = buffer[i];
-	}
-	numStr[3] = '\0';
-
-
-	int statusCode = atoi(numStr);
+	int statusCode = getStatusCode();
+	if (statusCode == -1) return;
 
 	printf(" status code %i\n", statusCode);
 
