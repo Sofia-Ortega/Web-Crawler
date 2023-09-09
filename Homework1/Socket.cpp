@@ -98,6 +98,7 @@ string Socket::formatGetRequest(bool getRobot = false) {
 	string s;
 
 	string request = url.request;
+	printf("\n\n\n--------------------------------\n");
 	if (getRobot) {
 		request = "/robots.txt";
 	}
@@ -107,6 +108,10 @@ string Socket::formatGetRequest(bool getRobot = false) {
 	s += "Host: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
+
+	printf("url, request: %s, %s \n", url.request.c_str(), request.c_str());
+	printf("get request: %s\n", s.c_str());
+	printf("\n\n\n--------------------------------\n");
 
 	return s;
 
@@ -208,7 +213,7 @@ void Socket::Read(void) {
 	readRequestIntoBuffer(getRobotRequest);
 
 	char* response = buffer;
-	printf("Robot response: %s", response);
+	printf("\n\n\nRobot response: \n%s", response);
 
 
 

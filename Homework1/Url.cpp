@@ -24,7 +24,7 @@ Url::Url(string urlInput) {
 		throw std::invalid_argument("failed with invalid scheme");
 	}
 
-	url = url.substr(7);
+	 url = url.substr(7);
 
 
 	// Hashtag
