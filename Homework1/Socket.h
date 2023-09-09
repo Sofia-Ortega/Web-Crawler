@@ -29,7 +29,11 @@ private:
 
 	SOCKET sock;
 
-	string formatGetRequest(bool getRobot);
+	string formatGetRequest();
+	string formatRobotRequest();
+
+	int getStatusCode();
+
 	void resizeBuffer();
 	void clearBuffer();
 

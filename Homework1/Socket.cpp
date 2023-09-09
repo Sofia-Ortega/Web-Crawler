@@ -12,6 +12,14 @@ Socket::Socket(const Url& urlInput) {
 
 	this->url = Url(urlInput);
 
+	// check if host duplicate
+	printf("\tChecking host uniqueness...");
+	auto seenHostResult = seenHosts.insert(url.host);
+	if (seenHostResult.second == false) {
+		throw std::exception("failed - Duplicate Host");
+	}
+	printf("passed\n");
+
 	printf("\tDoing DNS... ");
 	startClock();
 
@@ -34,13 +42,6 @@ Socket::Socket(const Url& urlInput) {
 	DWORD IP = inet_addr(address);
 	if (IP == INADDR_NONE) {
 
-		// check if host duplicate
-		printf("\tChecking host uniqueness...");
-		auto setResult = seenHosts.insert(url.host);
-		if (setResult.second == false) {
-			throw std::exception("failed - Duplicate Host");
-		}
-		printf("passed\n");
 
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
@@ -51,27 +52,30 @@ Socket::Socket(const Url& urlInput) {
 
 		// copy into sin_addr the first IP address
 		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
+
+
 	}
 	else {
 		// valid IP
-		// check duplicate ip
-		printf("\tChecking IP uniqueness...");
-		auto setResult = seenIPs.insert(IP);
-		if (setResult.second == false) {
-			throw std::exception("failed - Duplicate IP");
-			return;
-		}
-		printf("passed\n");
-
 		// directly drop its binary version into sin_addr
 		server.sin_addr.S_un.S_addr = IP;
 	}
+
 
 	server.sin_family = AF_INET;
 	server.sin_port = htons(url.port);
 
 	printf("done in %i ms, found %s\n", endClock(), inet_ntoa(server.sin_addr));
 
+	// check duplicate ip
+	printf("\tChecking IP uniqueness...");
+	DWORD checkIP = server.sin_addr.s_addr;
+	auto setResult = seenIPs.insert(checkIP);
+	if (setResult.second == false) {
+		throw std::exception("failed - Duplicate IP");
+		return;
+	}
+	printf("passed\n");
 
 
 	// connect to socket on port 80
@@ -94,27 +98,34 @@ Socket::~Socket() {
 		delete[] buffer;
 }
 
-string Socket::formatGetRequest(bool getRobot = false) {
+string Socket::formatGetRequest() {
 	string s;
 
-	string request = url.request;
-	printf("\n\n\n--------------------------------\n");
-	if (getRobot) {
-		request = "/robots.txt";
-	}
-
-	s  = "GET " + request + " HTTP/1.0\r\n";
+	s  = "GET " + url.request + " HTTP/1.0\r\n";
 	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
 	s += "Host: " + url.host + "\r\n";
 	s += "Connection: close\r\n";
 	s += "\r\n";
 
-	printf("url, request: %s, %s \n", url.request.c_str(), request.c_str());
-	printf("get request: %s\n", s.c_str());
-	printf("\n\n\n--------------------------------\n");
 
 	return s;
 
+}
+
+string Socket::formatRobotRequest() {
+	string s;
+
+	s  = "HEAD /robots.txt HTTP/1.0\r\n";
+	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
+	s += "Host: " + url.host + "\r\n";
+	s += "Connection: close\r\n";
+	s += "\r\n";
+
+	return s;
+}
+
+int getStatusCode() {
+	return 1;
 }
 
 void Socket::resizeBuffer() {
@@ -209,8 +220,7 @@ void Socket::Read(void) {
 	printf("Connecting on robots...");
 	startClock();
 
-	const string getRobotRequest = formatGetRequest(true);
-	readRequestIntoBuffer(getRobotRequest);
+	readRequestIntoBuffer(formatRobotRequest());
 
 	char* response = buffer;
 	printf("\n\n\nRobot response: \n%s", response);
