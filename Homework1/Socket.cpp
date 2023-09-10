@@ -1,3 +1,13 @@
+
+/*
+*
+* Name: Sofia Ortega
+* Class: CSCE 463-500
+* Semester: Fall 2023
+*
+*/
+
+
 #include "Socket.h"
 
 set<DWORD> Socket::seenIPs;
