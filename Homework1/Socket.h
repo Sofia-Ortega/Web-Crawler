@@ -44,7 +44,7 @@ private:
 	void startClock();
 	int endClock();
 
-	int readRequestIntoBuffer(string getRequest, SOCKET mySock);
+	int readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
 	Socket(const Url& urlInput);

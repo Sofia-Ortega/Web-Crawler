@@ -17,6 +17,10 @@ using std::string;
 
 int main(int argc, char* argv[]) {
 
+	if (argc == 1) {
+		printf("[ERROR] Enter input");
+		return -1;
+	}
 
 	if (argc == 3 && atoi(argv[1]) != 1) {
 		printf("[ERROR] Incorrect input");
@@ -28,7 +32,6 @@ int main(int argc, char* argv[]) {
 		threading = false;
 	}
 	
-	string inputFileName = argv[2];
 
 
 	WSADATA wsaData;
@@ -61,12 +64,20 @@ int main(int argc, char* argv[]) {
 
 
 	// ------------ From file ------------------
+	string inputFileName = argv[2];
 	std::ifstream inputFile(inputFileName);
-
+	
 	if (!inputFile.is_open()) {
 		printf("[ERROR] Can't open file\n");
 		return -1;
 	}
+
+	inputFile.seekg(0, inputFile.end);
+	int fileSize = inputFile.tellg();
+
+	printf("Opened %s with size %i", inputFileName.c_str(), fileSize);
+
+	inputFile.seekg(0, inputFile.beg);
 
 	string link;
 	while (std::getline(inputFile, link)) {
@@ -89,6 +100,7 @@ int main(int argc, char* argv[]) {
 	
 	// cleanup!
 	WSACleanup();
+	inputFile.close();
 	
 
 

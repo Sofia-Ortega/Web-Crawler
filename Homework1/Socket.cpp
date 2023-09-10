@@ -102,7 +102,7 @@ Socket::Socket(const Url& urlInput) {
 	printf("\tLoading...");
 	startClock();
 
-	int readResult = readRequestIntoBuffer(formatRobotRequest(), roboSock);
+	int readResult = readRequestIntoBuffer(formatRobotRequest(), roboSock, 16384);
 	if (readResult == -1) {
 		throw std::exception();
 		return;
@@ -225,7 +225,7 @@ int Socket::endClock() {
 	return (int)timeElapsed / (CLOCKS_PER_SEC / 1000);
 }
 
-int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock) {
+int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize) {
 	
 	size_t sendResult = send(mySock, getRequest.c_str(), (int)getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
@@ -271,6 +271,10 @@ int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock) {
 			// prepare buffer for next addition
 			// doubles the capacity
 			if (size + BUFFER_SIZE >= capacity) {
+				if (capacity * 2 > maxDownloadSize) {
+					printf("Download Size exceeded\n");
+					return -1;
+				}
 				resizeBuffer();
 			}
 
@@ -296,7 +300,10 @@ void Socket::Read(void) {
 	startClock();
 
 	const string getRequest = formatGetRequest();
-	readRequestIntoBuffer(getRequest, sock);
+	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
+	if (readResult == -1) {
+		return;
+	}
 
 
 	printf("done in %i ms with %i bytes\n", endClock(), size);
@@ -326,22 +333,21 @@ void Socket::Read(void) {
 	}
 
 	// ***************** Parse ********************
-	if (statusCode == 200) {
-		//char temp = buffer[1000];
-		//buffer[1000] = '\0';
-		//printf("\n\n\n%s\n\n\n", buffer);
-		//buffer[1000] = temp;
+	if (statusCode >= 200 && statusCode <= 299) {
 		Parse();
 	}
 
 
+	/*
 	// ***************** Print Header ****************
 	printf("---------------------------\n");
 	printf("%s\n", header);
 
+	// print buffer
+	printf("%s\n", buffer);
+	*/
 	
 
-	//printf("%s\n", buffer);
 	buffer = header;
 }
 

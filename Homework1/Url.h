@@ -4,8 +4,15 @@
 #include <string>
 using std::string;
 
+
+#define MAX_HOST_LEN		256
+#define MAX_URL_LEN			2048
+#define MAX_REQUEST_LEN		2048
+
 class Url
 {
+private:
+
 public:
 	string scheme;
 	string host; 

@@ -17,6 +17,10 @@ Url::Url(string urlInput) {
 	baseUrl = urlInput;
 	string url = urlInput;
 
+	if (url.length() > MAX_URL_LEN) {
+		throw std::exception(" URL Length too long");
+		return;
+	}
 
 	// get scheme -> remove
 	string scheme = url.substr(0, 7);
@@ -86,6 +90,9 @@ Url::Url(string urlInput) {
 
 	// Host
 	this->host = url;
+	if (host.length() > MAX_HOST_LEN) {
+		throw std::exception("Host URL Length too long");
+	}
 
 	// combine
 	this->request = path;
@@ -95,9 +102,10 @@ Url::Url(string urlInput) {
 
 	}
 
-	//if (request.at(request.size() - 1) != '/') {
-	//	request += "/";
-	//}
+	if (request.length() > MAX_REQUEST_LEN) {
+		throw std::exception("Request Length too long");
+	}
+
 
 
 	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
