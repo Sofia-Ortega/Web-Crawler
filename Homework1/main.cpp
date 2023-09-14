@@ -15,7 +15,95 @@ using std::cout;
 using std::endl;
 using std::string;
 
+
+class Test {
+private:
+	HANDLE mutex;
+	HANDLE finished;
+	HANDLE eventQuit;
+public:
+	Test() {
+		// mutex to access critical section; initial state NOT locked
+		mutex = CreateMutex(NULL, 0, NULL);
+		// create a semaphore; min: 0, max: 2; counts number of active threads
+		finished = CreateSemaphore(NULL, 0, 2, NULL);
+		// create a quit event; manual reset, inital state = not signaled
+		eventQuit = CreateEvent(NULL, true, false, NULL);
+	}
+
+	void threadA() {
+
+		// mutex
+		WaitForSingleObject(mutex, INFINITE); // wait for mutex
+		printf("thread A %d started\n", GetCurrentThreadId()); // print inside mutex to avoid garbage
+		Sleep(1000); // critical section
+		ReleaseMutex(mutex); // release mutex
+
+
+		// signal that thread has finihsed job
+		ReleaseSemaphore(finished, 1, NULL);
+
+		// wait for threadB to exit
+		WaitForSingleObject(eventQuit, INFINITE);
+
+		// print about to exit
+		WaitForSingleObject(mutex, INFINITE);
+		printf("thread A %d quitting on event\n", GetCurrentThreadId());
+		ReleaseMutex(mutex);
+
+	}
+
+	void threadB() {
+		// wait for both thread As to finish
+		WaitForSingleObject(finished, INFINITE);
+		WaitForSingleObject(finished, INFINITE);
+
+		// no need to sync bc only thread B is left
+		printf("thread B is running!\n");
+		Sleep(3000);
+
+		printf("thread B setting up quit event\n");
+
+		// force other threads to quit
+		SetEvent(eventQuit);
+
+
+
+	}
+};
+
+UINT startThreadA(LPVOID pParam) {
+	Test* p = (Test*)pParam;
+	p->threadA();
+	return 0;
+}
+
+UINT startThreadB(LPVOID pParam) {
+	Test* p = (Test*)pParam;
+	p->threadB();
+	return 0;
+}
+
+
 int main(int argc, char* argv[]) {
+
+	HANDLE* handles = new HANDLE[3];
+	Test p;
+
+	// structure p is the shared space between threads
+	handles[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
+	handles[1] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
+	handles[2] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadB, &p, 0, NULL);
+
+	for (int i = 0; i < 3; i++) {
+		WaitForSingleObject(handles [i], INFINITE);
+		CloseHandle(handles [i]);
+	}
+
+	printf("terminating main()");
+	
+	return 0;
+
 
 	if (argc == 1) {
 		printf("[ERROR] Enter input");
