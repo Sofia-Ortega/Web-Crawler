@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Crawler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -137,6 +138,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Crawler.h" />
     <ClInclude Include="HTMLParserBase.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="stdafx.h" />
