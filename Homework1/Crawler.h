@@ -8,6 +8,11 @@ class Crawler
 {
 private:
 	std::queue<Url> q;
+
+	HANDLE* handles;
+	HANDLE mutex;
+
+
 	int originalQueueSize;
 	int uniqueHosts;
 	int uniqueIps;
@@ -19,8 +24,9 @@ private:
 	void printSummary();
 public:
 	Crawler();
+	~Crawler();
 
 	void ReadFile(string inputFileName);
-	void Run(int threadNum);
+	void Run();
 };
 

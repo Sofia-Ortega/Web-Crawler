@@ -8,6 +8,7 @@
 */
 
 #include "stdafx.h"
+#include "Crawler.h"
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -84,26 +85,63 @@ UINT startThreadB(LPVOID pParam) {
 	return 0;
 }
 
+UINT startCrawlerRun(LPVOID pParam) {
+	Crawler* c = (Crawler*)pParam;
+	c->Run();
+	return 0;
+}
+
 
 int main(int argc, char* argv[]) {
 
-	HANDLE* handles = new HANDLE[3];
+
+	int numThreads = 3;
+	string inputFile = "input.txt";
+
+	HANDLE* handles = new HANDLE[numThreads + 1];
+	Crawler crawler;
+
+	crawler.ReadFile(inputFile);
+
+	for (int i = 0; i < numThreads; i++) {
+		handles[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerRun, &crawler, 0, NULL);
+	}
+
+	// handles[numThreads]; // stat thread
+
+	for (int i = 0; i < numThreads; i++) {
+		WaitForSingleObject(handles[i], INFINITE);
+		CloseHandle(handles[i]);
+	}
+
+	printf("terminating main()");
+
+	return 0;
+
+
+
+
+
+	// --------------------------------------------------------------------------------------------------------
+
+	HANDLE* handles2 = new HANDLE[3];
 	Test p;
 
 	// structure p is the shared space between threads
-	handles[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
-	handles[1] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
-	handles[2] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadB, &p, 0, NULL);
+	handles2[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
+	handles2[1] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
+	handles2[2] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadB, &p, 0, NULL);
 
 	for (int i = 0; i < 3; i++) {
-		WaitForSingleObject(handles [i], INFINITE);
-		CloseHandle(handles [i]);
+		WaitForSingleObject(handles2 [i], INFINITE);
+		CloseHandle(handles2 [i]);
 	}
 
 	printf("terminating main()");
 	
 	return 0;
 
+	/*
 
 	if (argc == 1) {
 		printf("[ERROR] Enter input");
@@ -190,6 +228,7 @@ int main(int argc, char* argv[]) {
 	WSACleanup();
 	inputFile.close();
 	
+	*/
 
 
 
