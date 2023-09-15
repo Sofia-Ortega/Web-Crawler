@@ -11,6 +11,7 @@ private:
 
 	HANDLE* handles;
 	HANDLE mutex;
+	HANDLE eventQuit;
 
 
 	int originalQueueSize;
@@ -20,7 +21,6 @@ private:
 	int crawledUrls;
 	int totalLinks;
 
-	void printStats();
 	void printSummary();
 public:
 	Crawler();
@@ -28,5 +28,7 @@ public:
 
 	void ReadFile(string inputFileName);
 	void Run();
+	void printStats();
+	void quitStatsThread();
 };
 

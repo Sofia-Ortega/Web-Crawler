@@ -91,6 +91,11 @@ UINT startCrawlerRun(LPVOID pParam) {
 	return 0;
 }
 
+UINT startCrawlerStats(LPVOID pParam) {
+	Crawler* c = (Crawler*)pParam;
+	c->printStats();
+	return 0;
+}
 
 int main(int argc, char* argv[]) {
 
@@ -101,7 +106,11 @@ int main(int argc, char* argv[]) {
 	HANDLE* handles = new HANDLE[numThreads + 1];
 	Crawler crawler;
 
+	// read file + populate queue
 	crawler.ReadFile(inputFile);
+
+	// start stats thread
+	handles[numThreads] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerStats, &crawler, 0, NULL);
 
 	for (int i = 0; i < numThreads; i++) {
 		handles[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerRun, &crawler, 0, NULL);
