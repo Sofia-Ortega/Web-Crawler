@@ -66,6 +66,8 @@ public:
 	short passedRobots;
 	short crawledUrlSuccess;
 
+	int bytesDownloaded;
+
 	int numOfLinks;
 
 	Socket(const Url& urlInput);

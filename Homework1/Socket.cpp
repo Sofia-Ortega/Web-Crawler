@@ -20,6 +20,7 @@ Socket::Socket(const Url& urlInput) {
 	uniqueIp = 0;
 	passedRobots = 0;
 	crawledUrlSuccess = 0;
+	bytesDownloaded = 0;
 
 	numOfLinks = 0;
 
@@ -281,6 +282,7 @@ int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownl
 			else if (bytes == 0) {
 				// FIXME: make sure space for null terminated 
 				buffer[size] = '\0';
+				bytesDownloaded += size;
 				size++;
 				break;
 			}

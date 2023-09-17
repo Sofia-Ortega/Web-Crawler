@@ -7,7 +7,7 @@ Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOf
 
 	// initial state NOT locked
 	mutexQueue = CreateMutex(NULL, 0, NULL);
-	mutexQueue = CreateMutex(NULL, 0, NULL);
+	mutexStats = CreateMutex(NULL, 0, NULL);
 	
 	// manual reset, initial state = not signaled
 	eventQuit = CreateEvent(NULL, true, false, NULL);
@@ -63,6 +63,8 @@ void Crawler::ReadFile(string inputFileName) {
 	originalQueueSize = q.size();
 	uniqueHosts = 0;
 	uniqueIps = 0;
+
+	printf("Origininal Queue Size %d\n", originalQueueSize);
 }
 
 void Crawler::queueLock() {
@@ -86,8 +88,9 @@ void Crawler::statsUnlock() {
 
 void Crawler::Run() {
 
+	int waitTime = GetCurrentThreadId() / 10;
+	
 	// sync 
-
 	while (!q.empty()) {
 		queueLock();
 
@@ -95,7 +98,7 @@ void Crawler::Run() {
 		if (!q.empty()) {
 
 			url = q.front();
-			printf("thread Run %d started running with %s\n", GetCurrentThreadId(), q.front().baseUrl.c_str()); // print inside mutex to avoid garbage
+			// printf("thread Run %d with wait time %d started running with %s\n", GetCurrentThreadId(), waitTime, q.front().baseUrl.c_str()); // print inside mutex to avoid garbage
 			q.pop();
 		}
 
@@ -117,11 +120,13 @@ void Crawler::Run() {
 			passedRobots += sock.passedRobots;
 			crawledUrls += sock.crawledUrlSuccess;
 
+			bytesDownloaded += sock.bytesDownloaded;
+
 			totalLinks += sock.numOfLinks;
 
 			statsUnlock();
 
-			Sleep(2500);
+			Sleep(waitTime);
 
 		}
 		catch (const std::exception& e) {
@@ -140,18 +145,20 @@ void Crawler::Run() {
 void Crawler::printStats() {
 
 	clock_t startTime = clock();
+	clock_t startTimeBetweenStatsThreadWakeup = clock();
 
 	while (true) {
 
 
-		DWORD waitResult = WaitForSingleObject(eventQuit, 3000); // Wait for 3 seconds or until the event is signaled
+		// FIXME: return back to 3000
+		DWORD waitResult = WaitForSingleObject(eventQuit, 1000); // Wait for 3 seconds or until the event is signaled
 		if (waitResult == WAIT_OBJECT_0) {
 			break;
 		}
 
 		// lock mutex
 		WaitForSingleObject(mutexQueue, INFINITE); // wait for mutex
-		float Q = q.size();
+		int Q = q.size();
 		ReleaseMutex(mutexQueue);
 
 
@@ -169,18 +176,28 @@ void Crawler::printStats() {
 		int R = passedRobots;
 		int C = crawledUrls;
 		int L = totalLinks;
+
+		int timeElapsedSinceLastStatsThread = (int)(clock() - startTimeBetweenStatsThreadWakeup) / (CLOCKS_PER_SEC / 1000);
+
+		float crawlingSpeed = C / timeElapsedSinceLastStatsThread; // pages per second
+
+		float pagesPerBytes = crawledUrls / bytesDownloaded;
+		float downloadRate = pagesPerBytes / timeElapsedSinceLastStatsThread; // Mbps -> (num of pages / bytes) / timeElapsedSinceLastStatsThread 
 		statsUnlock();
 
 		int timeElapsed = (int)(clock() - startTime) / (CLOCKS_PER_SEC / 1000);
 
 		printf("Stat Thread:\n");
-		printf("QueueSize: %f \n\n", Q);
+		printf("QueueSize: %d \n\n", Q);
 
 
-		L /= 1000;
+		// L /= 1000;
 
 		printf("[%3d] %3d Q %6d E %7d H %6d D %6d I %5d R %5d C %5d L %4d K\n", timeElapsed, currNumOfActiveThreads, Q, E, H, D, I, R, C, L);
+		printf("\t*** crawling %.3g pps @ %.3g Mbps with total bytes downloaded %d over %d time\n", crawlingSpeed, downloadRate, bytesDownloaded, timeElapsedSinceLastStatsThread);
 		
+
+		startTimeBetweenStatsThreadWakeup = clock();
 
 		
 

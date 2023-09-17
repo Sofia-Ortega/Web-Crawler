@@ -11,7 +11,6 @@ private:
 
 	HANDLE mutexQueue;
 	HANDLE mutexStats;
-	HANDLE threadSemaphore;
 	HANDLE eventQuit;
 
 	int maxThreadNum;
@@ -24,6 +23,8 @@ private:
 	int passedRobots;
 	int crawledUrls;
 	int totalLinks;
+
+	int bytesDownloaded;
 
 
 	void printSummary();

@@ -153,6 +153,9 @@ int main(int argc, char* argv[]) {
 	printf("terminating stats thread\n");
 	crawler.quitStatsThread();
 
+	WaitForSingleObject(handles[numThreads], INFINITE);
+	CloseHandle(handles[numThreads]);
+
 	printf("terminating main()\n");
 
 	return 0;
