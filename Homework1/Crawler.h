@@ -9,21 +9,32 @@ class Crawler
 private:
 	std::queue<Url> q;
 
-	HANDLE* handles;
-	HANDLE mutex;
+	HANDLE mutexQueue;
+	HANDLE mutexStats;
+	HANDLE threadSemaphore;
 	HANDLE eventQuit;
 
+	int maxThreadNum;
+	int finishedThreads;
 
 	int originalQueueSize;
 	int uniqueHosts;
+	int numOfDnsLookups;
 	int uniqueIps;
 	int passedRobots;
 	int crawledUrls;
 	int totalLinks;
 
+
 	void printSummary();
+
+	void queueLock();
+	void queueUnlock();
+
+	void statsLock();
+	void statsUnlock();
 public:
-	Crawler();
+	Crawler(int numOfThreads);
 	~Crawler();
 
 	void ReadFile(string inputFileName);

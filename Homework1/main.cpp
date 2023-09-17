@@ -99,12 +99,38 @@ UINT startCrawlerStats(LPVOID pParam) {
 
 int main(int argc, char* argv[]) {
 
+	/*
+	WSADATA wsaData;
+
+	//Initialize WinSock; once per program run
+	WORD wVersionRequested = MAKEWORD(2, 2);
+	if (WSAStartup(wVersionRequested, &wsaData) != 0) {
+		printf("WSAStartup error %d\n", WSAGetLastError());
+		WSACleanup();
+		return -1;
+	}
+	string link = "http://allthebuildingsinnewyork.com/";
+	try {
+		Url url(link);
+		Socket sock(url);
+		sock.Read();
+	}
+	catch (const std::exception& e) {
+		printf("[ERROR] %s", e.what());
+	}
+
+	WSACleanup();
+	return 1;
+
+	*/
+	// ----------------------------------------------------
+
 
 	int numThreads = 3;
 	string inputFile = "input.txt";
 
 	HANDLE* handles = new HANDLE[numThreads + 1];
-	Crawler crawler;
+	Crawler crawler = Crawler(numThreads);
 
 	// read file + populate queue
 	crawler.ReadFile(inputFile);
@@ -123,7 +149,11 @@ int main(int argc, char* argv[]) {
 		CloseHandle(handles[i]);
 	}
 
-	printf("terminating main()");
+	
+	printf("terminating stats thread\n");
+	crawler.quitStatsThread();
+
+	printf("terminating main()\n");
 
 	return 0;
 
@@ -146,7 +176,7 @@ int main(int argc, char* argv[]) {
 		CloseHandle(handles2 [i]);
 	}
 
-	printf("terminating main()");
+	printf("terminating main()\n");
 	
 	return 0;
 

@@ -22,8 +22,8 @@ Url::Url(string urlInput) {
 	// find : -> port -> remove -> host
 
 
-	printf("URL: %s\n", urlInput.c_str());
-	printf("\tParsing URL... ");
+	// printf("URL: %s\n", urlInput.c_str());
+	// printf("\tParsing URL... ");
 
 	baseUrl = urlInput;
 	string url = urlInput;
@@ -119,7 +119,7 @@ Url::Url(string urlInput) {
 
 
 
-	printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
+	// printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
 
 
 }

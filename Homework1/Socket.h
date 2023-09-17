@@ -38,6 +38,8 @@ private:
 
 	bool robotsNotAllowed;
 
+
+
 	Url url;
 
 	SOCKET sock;
@@ -58,6 +60,14 @@ private:
 	int readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
+	short uniqueHost;
+	short successfulDNSNum;
+	short uniqueIp;
+	short passedRobots;
+	short crawledUrlSuccess;
+
+	int numOfLinks;
+
 	Socket(const Url& urlInput);
 	~Socket();
 	void Read(void);

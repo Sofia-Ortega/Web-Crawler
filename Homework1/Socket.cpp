@@ -14,6 +14,14 @@ set<DWORD> Socket::seenIPs;
 set<string> Socket::seenHosts;
 
 Socket::Socket(const Url& urlInput) {
+	
+	uniqueHost = 0;
+	successfulDNSNum = 0;
+	uniqueIp = 0;
+	passedRobots = 0;
+	crawledUrlSuccess = 0;
+
+	numOfLinks = 0;
 
 	// initialize member variables
 	this->buffer = new char[BUFFER_SIZE];
@@ -23,14 +31,15 @@ Socket::Socket(const Url& urlInput) {
 	this->url = Url(urlInput);
 
 	// check if host duplicate
-	printf("\tChecking host uniqueness...");
+//	printf("\tChecking host uniqueness...");
 	auto seenHostResult = seenHosts.insert(url.host);
 	if (seenHostResult.second == false) {
 		throw std::exception("failed - Duplicate Host");
 	}
-	printf("passed\n");
+	uniqueHost = 1; // passed host uniqueness
+//	printf("passed\n");
 
-	printf("\tDoing DNS... ");
+//	printf("\tDoing DNS... ");
 	startClock();
 
 	SOCKET roboSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -63,9 +72,11 @@ Socket::Socket(const Url& urlInput) {
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
 		if (remote == NULL) {
-			throw std::exception("Invalid string: neither FQDN nor IP address \n");
+			// throw std::exception("Invalid string: neither FQDN nor IP address \n");
 			return;
 		}
+
+		successfulDNSNum++;
 
 		// copy into sin_addr the first IP address
 		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
@@ -82,21 +93,22 @@ Socket::Socket(const Url& urlInput) {
 	server.sin_family = AF_INET;
 	server.sin_port = htons(url.port);
 
-	printf("done in %i ms, found %s\n", endClock(), inet_ntoa(server.sin_addr));
+//	printf("done in %i ms, found %s\n", endClock(), inet_ntoa(server.sin_addr));
 
 	// check duplicate ip
-	printf("\tChecking IP uniqueness...");
+//	printf("\tChecking IP uniqueness...");
 	DWORD checkIP = server.sin_addr.s_addr;
 	auto setResult = seenIPs.insert(checkIP);
 	if (setResult.second == false) {
 		throw std::exception("failed - Duplicate IP");
 		return;
 	}
-	printf("passed\n");
+	uniqueIp++;
+//	printf("passed\n");
 
 
 	// connect to robot page
-	printf("\tConnecting on robots... ");
+//	printf("\tConnecting on robots... ");
 	startClock();
 
 	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
@@ -105,11 +117,11 @@ Socket::Socket(const Url& urlInput) {
 		throw std::exception();
 		return;
 	}
-	printf("done in %i ms\n", endClock());
+//	printf("done in %i ms\n", endClock());
 
 
 	// read robot.txt
-	printf("\tLoading...");
+//	printf("\tLoading...");
 	startClock();
 
 	int readResult = readRequestIntoBuffer(formatRobotRequest(), roboSock, 16384);
@@ -118,20 +130,21 @@ Socket::Socket(const Url& urlInput) {
 		return;
 	}
 
-	printf("done in %i ms with %i bytes\n", endClock(), size);
+//	printf("done in %i ms with %i bytes\n", endClock(), size);
 
 	closesocket(roboSock);
 
 
 	// check status header
-	printf("\tVerifying header... ");
+//	printf("\tVerifying header... ");
 	int statusCode = getStatusCode();
-	printf("status code %i\n", statusCode);
+//	printf("status code %i\n", statusCode);
 
 
 	// check if robots.txt exists
 	if (statusCode >= 400 && statusCode <= 499) {
 		robotsNotAllowed = false;
+		passedRobots++;
 	}
 	else {
 		robotsNotAllowed = true;
@@ -140,9 +153,8 @@ Socket::Socket(const Url& urlInput) {
 
 
 
-
 	// connect to socket on port 
-	printf("      * Connecting on page...");
+//	printf("      * Connecting on page...");
 	startClock();
 
 	int connectResult2 = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
@@ -151,7 +163,7 @@ Socket::Socket(const Url& urlInput) {
 		throw std::exception();
 	}
 
-	printf("done in %i ms\n", endClock());
+//	printf("done in %i ms\n", endClock());
 
 };
 
@@ -239,7 +251,7 @@ int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownl
 	
 	size_t sendResult = send(mySock, getRequest.c_str(), (int)getRequest.size(), 0);
 	if (sendResult == SOCKET_ERROR) {
-		printf("Sending error: %d\n", WSAGetLastError());
+		printf("Sending error: %d with url %s\n", WSAGetLastError(), url.baseUrl.c_str());
 		return -1;
 	}
 
@@ -306,7 +318,7 @@ void Socket::Read(void) {
 
 	clearBuffer();
 
-	printf("\tLoading... ");
+	// printf("\tLoading... ");
 	startClock();
 
 	const string getRequest = formatGetRequest();
@@ -316,15 +328,15 @@ void Socket::Read(void) {
 	}
 
 
-	printf("done in %i ms with %i bytes\n", endClock(), size);
+	// printf("done in %i ms with %i bytes\n", endClock(), size);
 
 
 	// Status Code
-	printf("\tVerifying header... ");
+//	printf("\tVerifying header... ");
 	int statusCode = getStatusCode();
 	if (statusCode == -1) return;
 
-	printf(" status code %i\n", statusCode);
+	// printf(" status code %i\n", statusCode);
 
 
 	// ***************** Print Header ****************
@@ -332,8 +344,8 @@ void Socket::Read(void) {
 	char* endHeader = strstr(buffer, endHeaderCharacters);
 	char* header;
 	if (!endHeader) {
-		printf("---------------------------\n");
-		printf("%s", buffer);
+//		printf("---------------------------\n");
+//		printf("%s", buffer);
 		return;
 	}
 	else {
@@ -362,7 +374,7 @@ void Socket::Read(void) {
 }
 
 void Socket::Parse(void) {
-	printf("      + Parsing page... ");
+//	printf("      + Parsing page... ");
 	startClock();
 
 	HTMLParserBase* parser = new HTMLParserBase;
@@ -373,7 +385,7 @@ void Socket::Parse(void) {
 
 	if (nLinks < 0) {
 
-		printf("Parsing error\n");
+//		printf("Parsing error\n");
 		nLinks = 0;
 	}
 
@@ -388,7 +400,12 @@ void Socket::Parse(void) {
 	delete parser;
 	*/
 
-	printf("done in %i ms with %d links\n", endClock(), nLinks);
+//	printf("done in %i ms with %d links\n", endClock(), nLinks);
+
+	crawledUrlSuccess++;
+	numOfLinks = nLinks;
+
+	delete parser;
 
 }
 
