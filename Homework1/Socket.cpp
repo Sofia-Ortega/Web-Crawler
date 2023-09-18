@@ -207,7 +207,7 @@ int Socket::getStatusCode() {
 	char httpHeader[] = { 'H', 'T', 'T', 'P', '\0' };
 	for (int i = 0; i < 4; i++) {
 		if (buffer[i] != httpHeader[i]) {
-			printf("Non-Http Reply received - abort\n");
+			// printf("Non-Http Reply received - abort\n");
 			return -1;
 		}
 	}

@@ -1,7 +1,7 @@
 #include "Crawler.h"
 
 
-Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOfDnsLookups(0), uniqueIps(0), passedRobots(0), crawledUrls(0), totalLinks(0) {
+Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOfDnsLookups(0), uniqueIps(0), passedRobots(0), crawledUrls(0), totalLinks(0), status200(0), status300(0), status400(0), status500(0), statusOther(0) {
 	this->maxThreadNum = numOfThreads;
 	finishedThreads = 0;
 
@@ -124,9 +124,28 @@ void Crawler::Run() {
 
 			totalLinks += sock.numOfLinks;
 
+			int statusCode = sock.getStatusCode();
 			statsUnlock();
 
-			Sleep(waitTime);
+
+			if (statusCode < 200 || statusCode > 500) {
+				statusOther++;
+			}
+			else if (statusCode < 300) {
+				status200++;
+			}
+			else if (statusCode < 400) {
+				status300++;
+			}
+			else if (statusCode < 500) {
+				status400++;
+			}
+			else {
+				status500++;
+			}
+
+
+		//	Sleep(waitTime); // FIXME: delete me
 
 		}
 		catch (const std::exception& e) {
@@ -212,13 +231,13 @@ void Crawler::quitStatsThread() {
 
 
 void Crawler::printSummary() {
-	int numOfDns = 0;
 
+	printf("\n");
 	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, 0);
-	printf("Looked up %i DNS names @ %i/s\n", numOfDns, 0);
-	printf("Attempted %i site robots @ %i/s", 0, 0);
-	printf("Crawled %i pages @ %i/s (0.23MB)", 0, 0);
-	printf("Parsed %i links @ %i/s", 0, 0);
-	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i", 5, 4, 0, 0, 0);
+	printf("Looked up %i DNS names @ %i/s\n", numOfDnsLookups, 0);
+	printf("Attempted %i site robots @ %i/s\n", passedRobots, 0);
+	printf("Crawled %i pages @ %i/s (0.23MB)\n", crawledUrls, 0);
+	printf("Parsed %i links @ %i/s\n", totalLinks, 0);
+	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", 5, status200, status300, status400, status500);
 }
 

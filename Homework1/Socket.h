@@ -47,7 +47,6 @@ private:
 	string formatGetRequest();
 	string formatRobotRequest();
 
-	int getStatusCode();
 
 	void resizeBuffer();
 	void clearBuffer();
@@ -69,6 +68,8 @@ public:
 	int bytesDownloaded;
 
 	int numOfLinks;
+
+	int getStatusCode();
 
 	Socket(const Url& urlInput);
 	~Socket();

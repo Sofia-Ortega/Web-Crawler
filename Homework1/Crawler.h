@@ -27,7 +27,12 @@ private:
 	int bytesDownloaded;
 
 
-	void printSummary();
+	int status200;
+	int status300;
+	int status400;
+	int status500;
+	int statusOther;
+
 
 	void queueLock();
 	void queueUnlock();
@@ -41,6 +46,7 @@ public:
 	void ReadFile(string inputFileName);
 	void Run();
 	void printStats();
+	void printSummary();
 	void quitStatsThread();
 };
 
