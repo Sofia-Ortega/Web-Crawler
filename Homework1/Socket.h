@@ -56,12 +56,15 @@ private:
 	void startClock();
 	int endClock();
 
+	int getStatusCode();
+
 	int readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
 	short uniqueHost;
 	short successfulDNSNum;
 	short uniqueIp;
+	short robotAttempted;
 	short passedRobots;
 	short crawledUrlSuccess;
 
@@ -69,7 +72,7 @@ public:
 
 	int numOfLinks;
 
-	int getStatusCode();
+	int statusCode;
 
 	Socket(const Url& urlInput);
 	~Socket();

@@ -120,15 +120,18 @@ void Crawler::Run() {
 			passedRobots += sock.passedRobots;
 			crawledUrls += sock.crawledUrlSuccess;
 
+			robotsAttempted += sock.robotAttempted;
+
 			bytesDownloaded += sock.bytesDownloaded;
 
 			totalLinks += sock.numOfLinks;
 
-			int statusCode = sock.getStatusCode();
+			int statusCode = sock.statusCode;
 			statsUnlock();
 
 
-			if (statusCode < 200 || statusCode > 500) {
+			if (statusCode == -1) {}
+			else if (statusCode < 200 || statusCode > 500) {
 				statusOther++;
 			}
 			else if (statusCode < 300) {
@@ -169,8 +172,8 @@ void Crawler::printStats() {
 	while (true) {
 
 
-		// FIXME: return back to 3000
-		DWORD waitResult = WaitForSingleObject(eventQuit, 1000); // Wait for 3 seconds or until the event is signaled
+		// FIXME: return back to 2000
+		DWORD waitResult = WaitForSingleObject(eventQuit, 2000); // Wait for 3 seconds or until the event is signaled
 		if (waitResult == WAIT_OBJECT_0) {
 			break;
 		}
@@ -196,28 +199,26 @@ void Crawler::printStats() {
 		int C = crawledUrls;
 		int L = totalLinks;
 
-		int timeElapsedSinceLastStatsThread = (int)(clock() - startTimeBetweenStatsThreadWakeup) / (CLOCKS_PER_SEC / 1000);
+		int tempBytesDownloaded = bytesDownloaded; // DELETE
 
-		float crawlingSpeed = C / timeElapsedSinceLastStatsThread; // pages per second
+		int timeElapsedSinceLastStatsThread = (int)(clock() - startTimeBetweenStatsThreadWakeup) / (CLOCKS_PER_SEC);
 
-		float pagesPerBytes = crawledUrls / bytesDownloaded;
-		float downloadRate = pagesPerBytes / timeElapsedSinceLastStatsThread; // Mbps -> (num of pages / bytes) / timeElapsedSinceLastStatsThread 
+
+		float crawlingSpeed = C / 2000; // pages per second
+		float downloadRate = (bytesDownloaded / 2000) * 8; // bytes to bits conversion
+
 		statsUnlock();
 
-		int timeElapsed = (int)(clock() - startTime) / (CLOCKS_PER_SEC / 1000);
+		int timeElapsed = (int)(clock() - startTime) / (CLOCKS_PER_SEC);
 
-		printf("Stat Thread:\n");
-		printf("QueueSize: %d \n\n", Q);
-
-
+		// FIXME`
 		// L /= 1000;
 
 		printf("[%3d] %3d Q %6d E %7d H %6d D %6d I %5d R %5d C %5d L %4d K\n", timeElapsed, currNumOfActiveThreads, Q, E, H, D, I, R, C, L);
-		printf("\t*** crawling %.3g pps @ %.3g Mbps with total bytes downloaded %d over %d time\n", crawlingSpeed, downloadRate, bytesDownloaded, timeElapsedSinceLastStatsThread);
+		printf("\t*** crawling %.3g pps @ %.3g Mbps with total bytes downloaded %d over %d time\n", crawlingSpeed, downloadRate, tempBytesDownloaded, timeElapsedSinceLastStatsThread);
 		
 
 		startTimeBetweenStatsThreadWakeup = clock();
-
 		
 
 	}
@@ -235,7 +236,7 @@ void Crawler::printSummary() {
 	printf("\n");
 	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, 0);
 	printf("Looked up %i DNS names @ %i/s\n", numOfDnsLookups, 0);
-	printf("Attempted %i site robots @ %i/s\n", passedRobots, 0);
+	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, 0);
 	printf("Crawled %i pages @ %i/s (0.23MB)\n", crawledUrls, 0);
 	printf("Parsed %i links @ %i/s\n", totalLinks, 0);
 	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", 5, status200, status300, status400, status500);

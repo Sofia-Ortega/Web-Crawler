@@ -24,6 +24,9 @@ private:
 	int crawledUrls;
 	int totalLinks;
 
+	int robotsAttempted;
+
+
 	int bytesDownloaded;
 
 

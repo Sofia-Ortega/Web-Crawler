@@ -18,11 +18,14 @@ Socket::Socket(const Url& urlInput) {
 	uniqueHost = 0;
 	successfulDNSNum = 0;
 	uniqueIp = 0;
+	robotAttempted = 0;
 	passedRobots = 0;
 	crawledUrlSuccess = 0;
 	bytesDownloaded = 0;
 
 	numOfLinks = 0;
+
+	statusCode = -1;
 
 	// initialize member variables
 	this->buffer = new char[BUFFER_SIZE];
@@ -43,6 +46,7 @@ Socket::Socket(const Url& urlInput) {
 //	printf("\tDoing DNS... ");
 	startClock();
 
+	
 	SOCKET roboSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (roboSock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
@@ -67,8 +71,8 @@ Socket::Socket(const Url& urlInput) {
 	char* address = url.getAddress();
 
 	DWORD IP = inet_addr(address);
+	successfulDNSNum++;
 	if (IP == INADDR_NONE) {
-
 
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
@@ -77,7 +81,6 @@ Socket::Socket(const Url& urlInput) {
 			return;
 		}
 
-		successfulDNSNum++;
 
 		// copy into sin_addr the first IP address
 		memcpy((char*)&(server.sin_addr), remote->h_addr, remote->h_length);
@@ -88,6 +91,7 @@ Socket::Socket(const Url& urlInput) {
 		// valid IP
 		// directly drop its binary version into sin_addr
 		server.sin_addr.S_un.S_addr = IP;
+
 	}
 
 
@@ -110,11 +114,14 @@ Socket::Socket(const Url& urlInput) {
 
 	// connect to robot page
 //	printf("\tConnecting on robots... ");
+	robotAttempted = 1;
+	printf("\nRobot has been attempted\n");
+
 	startClock();
 
 	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
-		printf("Connection error %d\n", WSAGetLastError());
+		printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl.c_str());
 		throw std::exception();
 		return;
 	}
@@ -219,9 +226,9 @@ int Socket::getStatusCode() {
 	numStr[3] = '\0';
 
 
-	int statusCode = atoi(numStr);
+	int myStatusCode = atoi(numStr);
 
-	return statusCode;
+	return myStatusCode;
 }
 
 void Socket::resizeBuffer() {
@@ -335,8 +342,10 @@ void Socket::Read(void) {
 
 	// Status Code
 //	printf("\tVerifying header... ");
-	int statusCode = getStatusCode();
-	if (statusCode == -1) return;
+	int myStatusCode = getStatusCode();
+	if (myStatusCode == -1) return;
+
+	this->statusCode = myStatusCode;
 
 	// printf(" status code %i\n", statusCode);
 
@@ -356,8 +365,10 @@ void Socket::Read(void) {
 		buffer = endHeader;
 	}
 
+	crawledUrlSuccess = 1;
+
 	// ***************** Parse ********************
-	if (statusCode >= 200 && statusCode <= 299) {
+	if (myStatusCode >= 200 && myStatusCode <= 299) {
 		Parse();
 	}
 
@@ -404,8 +415,9 @@ void Socket::Parse(void) {
 
 //	printf("done in %i ms with %d links\n", endClock(), nLinks);
 
-	crawledUrlSuccess++;
 	numOfLinks = nLinks;
+
+// 	printf("\n\n\n*****************************************\nCONSIDER THIS URL CRAWLED\n******************************\n\n");
 
 	delete parser;
 

@@ -17,74 +17,6 @@ using std::endl;
 using std::string;
 
 
-class Test {
-private:
-	HANDLE mutex;
-	HANDLE finished;
-	HANDLE eventQuit;
-public:
-	Test() {
-		// mutex to access critical section; initial state NOT locked
-		mutex = CreateMutex(NULL, 0, NULL);
-		// create a semaphore; min: 0, max: 2; counts number of active threads
-		finished = CreateSemaphore(NULL, 0, 2, NULL);
-		// create a quit event; manual reset, inital state = not signaled
-		eventQuit = CreateEvent(NULL, true, false, NULL);
-	}
-
-	void threadA() {
-
-		// mutex
-		WaitForSingleObject(mutex, INFINITE); // wait for mutex
-		printf("thread A %d started\n", GetCurrentThreadId()); // print inside mutex to avoid garbage
-		Sleep(1000); // critical section
-		ReleaseMutex(mutex); // release mutex
-
-
-		// signal that thread has finihsed job
-		ReleaseSemaphore(finished, 1, NULL);
-
-		// wait for threadB to exit
-		WaitForSingleObject(eventQuit, INFINITE);
-
-		// print about to exit
-		WaitForSingleObject(mutex, INFINITE);
-		printf("thread A %d quitting on event\n", GetCurrentThreadId());
-		ReleaseMutex(mutex);
-
-	}
-
-	void threadB() {
-		// wait for both thread As to finish
-		WaitForSingleObject(finished, INFINITE);
-		WaitForSingleObject(finished, INFINITE);
-
-		// no need to sync bc only thread B is left
-		printf("thread B is running!\n");
-		Sleep(3000);
-
-		printf("thread B setting up quit event\n");
-
-		// force other threads to quit
-		SetEvent(eventQuit);
-
-
-
-	}
-};
-
-UINT startThreadA(LPVOID pParam) {
-	Test* p = (Test*)pParam;
-	p->threadA();
-	return 0;
-}
-
-UINT startThreadB(LPVOID pParam) {
-	Test* p = (Test*)pParam;
-	p->threadB();
-	return 0;
-}
-
 UINT startCrawlerRun(LPVOID pParam) {
 	Crawler* c = (Crawler*)pParam;
 	c->Run();
@@ -99,7 +31,19 @@ UINT startCrawlerStats(LPVOID pParam) {
 
 int main(int argc, char* argv[]) {
 
+
 	/*
+	string tempLink = "http://361107.spreadshirt.net/en/GB/Shop/Index/index";
+	try {
+		Url url(tempLink);
+
+
+	}
+	catch (const std::exception& e) {
+		printf("[ERROR] %s\n", e.what());
+	}
+
+	return 0;
 	WSADATA wsaData;
 
 	//Initialize WinSock; once per program run
@@ -109,7 +53,67 @@ int main(int argc, char* argv[]) {
 		WSACleanup();
 		return -1;
 	}
+
+	*/
+
+	/*/
+	string inputFileName = "URL-input-100.txt";
+	std::ifstream inputFile(inputFileName);
+	
+	if (!inputFile.is_open()) {
+		printf("[ERROR] Can't open file\n");
+		return -1;
+	}
+
+	inputFile.seekg(0, inputFile.end);
+	int fileSize = inputFile.tellg();
+
+	printf("Opened %s with size %i\n", inputFileName.c_str(), fileSize);
+
+	inputFile.seekg(0, inputFile.beg);
+
+	string link;
+	int robotsAttempted = 0;
+	while (std::getline(inputFile, link)) {
+
+		try {
+			Url url(link);
+
+			// make url robot.txt
+			// Socket sock  -> connect to robot.url
+			// get status code
+
+			Socket sock(url);
+			sock.Read();
+
+			printf("URL: %s\n", link.c_str());
+
+			robotsAttempted += sock.robotAttempted;
+
+			printf("Status code %i; Robots passed %i, robots attempted so far %i\n", sock.statusCode, sock.passedRobots, robotsAttempted);
+		}
+		catch (const std::exception& e) {
+			//if(e.what() != "Unknown exception")
+			//	printf("[ERROR] %s\n", e.what());
+		}
+	}
+
+	
+	// cleanup!
+	WSACleanup();
+	inputFile.close();
+
+
+
+	return 0;
+	*/
+
+	/*
+	WSADATA wsaData;
+
+
 	string link = "http://allthebuildingsinnewyork.com/";
+
 	try {
 		Url url(link);
 		Socket sock(url);
@@ -126,8 +130,8 @@ int main(int argc, char* argv[]) {
 	// ----------------------------------------------------
 
 
-	int numThreads = 3;
-	string inputFile = "input.txt";
+	int numThreads = 10;
+	string inputFile = "URL-input-100.txt";
 
 	HANDLE* handles = new HANDLE[numThreads + 1];
 	Crawler crawler = Crawler(numThreads);
@@ -164,25 +168,6 @@ int main(int argc, char* argv[]) {
 
 
 
-
-	// --------------------------------------------------------------------------------------------------------
-
-	HANDLE* handles2 = new HANDLE[3];
-	Test p;
-
-	// structure p is the shared space between threads
-	handles2[0] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
-	handles2[1] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadA, &p, 0, NULL);
-	handles2[2] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startThreadB, &p, 0, NULL);
-
-	for (int i = 0; i < 3; i++) {
-		WaitForSingleObject(handles2 [i], INFINITE);
-		CloseHandle(handles2 [i]);
-	}
-
-	printf("terminating main()\n");
-	
-	return 0;
 
 	/*
 
