@@ -4,6 +4,9 @@
 #define MAX_URL_LEN			2048
 
 Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOfDnsLookups(0), uniqueIps(0), passedRobots(0), crawledUrls(0), totalLinks(0), status200(0), status300(0), status400(0), status500(0), statusOther(0) {
+
+	startClockTimer = clock();
+
 	this->maxThreadNum = numOfThreads;
 	finishedThreads = 0;
 
@@ -138,7 +141,6 @@ void Crawler::Run() {
 
 
 			if (statusCode != -1) {
-				printf("\tThe status code: %i\n", statusCode);
 				statusCode /= 100;
 
 				if (statusCode == 2) {
@@ -156,7 +158,6 @@ void Crawler::Run() {
 				else {
 					statusOther++;
 				}
-				printf("\tHTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
 			}
 
 			statsUnlock();
@@ -227,10 +228,10 @@ void Crawler::printStats() {
 		int timeElapsed = (int)(clock() - startTime) / (CLOCKS_PER_SEC);
 
 		// FIXME`
-		// L /= 1000;
+		L /= 1000;
 
 		printf("[%3d] %3d Q %6d E %7d H %6d D %6d I %5d R %5d C %5d L %4d K\n", timeElapsed, currNumOfActiveThreads, Q, E, H, D, I, R, C, L);
-		printf("\t*** crawling %.3g pps @ %.3g Mbps with total bytes downloaded %d over %d time\n", crawlingSpeed, downloadRate, tempBytesDownloaded, timeElapsedSinceLastStatsThread);
+		printf("\t*** crawling %.3g pps @ %.3g Mbps\n", crawlingSpeed, downloadRate);
 		
 
 		startTimeBetweenStatsThreadWakeup = clock();
@@ -247,13 +248,14 @@ void Crawler::quitStatsThread() {
 
 
 void Crawler::printSummary() {
+	int timeElapsed = (int)(clock() - startClockTimer) / (CLOCKS_PER_SEC);
 
 	printf("\n");
-	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, 0);
-	printf("Looked up %i DNS names @ %i/s\n", numOfDnsLookups, 0);
-	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, 0);
-	printf("Crawled %i pages @ %i/s (0.23MB)\n", crawledUrls, 0);
-	printf("Parsed %i links @ %i/s\n", totalLinks, 0);
+	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, originalQueueSize / timeElapsed);
+	printf("Looked up %i DNS names @ %i/s\n", numOfDnsLookups, numOfDnsLookups / timeElapsed);
+	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, robotsAttempted / timeElapsed);
+	printf("Crawled %i pages @ %i/s (%3d MB)\n", crawledUrls, crawledUrls / timeElapsed, bytesDownloaded * 8);
+	printf("Parsed %i links @ %i/s\n", totalLinks, totalLinks / timeElapsed);
 	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
 }
 

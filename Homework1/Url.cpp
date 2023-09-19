@@ -122,6 +122,7 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 	}
 
 	this->request = new char[requestLength];
+
 	request[0] = '/';
 
 	if (path)
@@ -133,9 +134,11 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 		strcat(request, query);
 	}
 	
-	strcat(request, "\0");
 
 	// printf("host %s, port %i, path %s, request %s\n", host, port, path, this->request);
+
+	printf("URL: %s\n", baseUrl);
+	printf("host %s, port %i, path %s, request %s, length: %i\n\n", host, port, path, this->request, strlen(request));
 
 
 }
@@ -149,10 +152,13 @@ void Url::deleteUrl() {
 
 	if (baseUrl)
 		delete baseUrl;
+	request = nullptr;
+	baseUrl = nullptr;
 }
 
-Url::Url(const Url&& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {
-
+Url::Url(Url&& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {
+	other.request = nullptr;
+	other.baseUrl = nullptr;
 }
 
 Url& Url::operator=(Url&& other) {

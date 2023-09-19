@@ -21,7 +21,7 @@
 #include "Url.h"
 #include "HTMLParserBase.h"
 
-using std::string;
+using std::strcmp;
 using std::set;
 
 
@@ -29,17 +29,15 @@ class Socket
 {
 private:
 
-	// Custom comparator for char*
-	struct CharPointerComparator {
+	// compare actual contents instead of addresses
+	struct Comparator {
 		bool operator()(const char* a, const char* b) const {
-			return std::strcmp(a, b) < 0;
+			return strcmp(a, b) < 0;
 		}
 	};
 
 	const int BUFFER_SIZE = 1024;
 
-	static set<DWORD> seenIPs;
-	static set<char*, CharPointerComparator> seenHosts;
 
 	char* buffer;
 	int size;
@@ -70,6 +68,9 @@ private:
 	int readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
+	static set<DWORD> seenIPs;
+	static set<char*, Comparator> seenHosts;
+
 	short uniqueHost;
 	short successfulDNSNum;
 	short uniqueIp;

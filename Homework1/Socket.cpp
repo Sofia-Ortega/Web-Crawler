@@ -13,7 +13,7 @@
 
 
 set<DWORD> Socket::seenIPs;
-set<char*, Socket::CharPointerComparator> Socket::seenHosts;
+set<char*, Socket::Comparator> Socket::seenHosts;
 
 Socket::Socket(char* link) : url(Url(link)) {
 
@@ -71,7 +71,6 @@ Socket::Socket(char* link) : url(Url(link)) {
 	char* address = url.getAddress();
 
 	DWORD IP = inet_addr(address);
-	successfulDNSNum++;
 	if (IP == INADDR_NONE) {
 
 		// if not valid ip, do DNS Lookup
@@ -94,6 +93,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	}
 
+	successfulDNSNum++;
 
 	server.sin_family = AF_INET;
 	server.sin_port = htons(url.port);
@@ -120,7 +120,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
-		printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl);
+		// printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl);
 		throw std::exception();
 		return;
 	}
@@ -178,6 +178,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 };
 
 Socket::~Socket() {
+
 	closesocket(sock);
 	if(buffer) 
 		delete[] buffer;
@@ -383,6 +384,7 @@ void Socket::Read(void) {
 	startClock();
 
 	char* getRequest = formatGetRequest();
+	printf("Get Request: \n%s\n", getRequest);
 	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
 	if (readResult == -1) {
 		return;
@@ -395,7 +397,7 @@ void Socket::Read(void) {
 
 
 	// Status Code
-//	printf("\tVerifying header... ");
+	//	printf("\tVerifying header... ");
 	int myStatusCode = getStatusCode();
 	if (myStatusCode == -1) return;
 

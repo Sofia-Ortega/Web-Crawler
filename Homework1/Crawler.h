@@ -36,6 +36,7 @@ private:
 	int status500;
 	int statusOther;
 
+	clock_t startClockTimer;
 
 	void queueLock();
 	void queueUnlock();

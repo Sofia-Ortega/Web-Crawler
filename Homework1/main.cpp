@@ -45,6 +45,10 @@ int main(int argc, char* argv[]) {
 	}
 
 	return 0;
+	*/
+
+	// -----------------------------------------------------------------------------
+	/*
 	WSADATA wsaData;
 
 	//Initialize WinSock; once per program run
@@ -55,60 +59,65 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	*/
 
-	/*/
 	string inputFileName = "URL-input-100.txt";
-	std::ifstream inputFile(inputFileName);
+	std::ifstream myinputFile(inputFileName);
 	
-	if (!inputFile.is_open()) {
+	if (!myinputFile.is_open()) {
 		printf("[ERROR] Can't open file\n");
 		return -1;
 	}
 
-	inputFile.seekg(0, inputFile.end);
-	int fileSize = inputFile.tellg();
+	myinputFile.seekg(0, myinputFile.end);
+	int fileSize = myinputFile.tellg();
 
-	printf("Opened %s with size %i\n", inputFileName.c_str(), fileSize);
+	printf("Opened %s with size %i\n\n", inputFileName.c_str(), fileSize);
 
-	inputFile.seekg(0, inputFile.beg);
+	myinputFile.seekg(0, myinputFile.beg);
 
-	string link;
+	string line;
 	int robotsAttempted = 0;
-	while (std::getline(inputFile, link)) {
+	while (std::getline(myinputFile, line)) {
 
 		try {
-			Url url(link);
 
-			// make url robot.txt
-			// Socket sock  -> connect to robot.url
-			// get status code
+			char* link = new char[line.length() + 1];
+			memset(link, 0, line.length() + 1);
 
-			Socket sock(url);
+			strcpy_s(link, line.length() + 1, line.c_str());
+
+
+			Socket sock(link);
 			sock.Read();
 
-			printf("URL: %s\n", link.c_str());
 
-			robotsAttempted += sock.robotAttempted;
+			
 
-			printf("Status code %i; Robots passed %i, robots attempted so far %i\n", sock.statusCode, sock.passedRobots, robotsAttempted);
+
 		}
 		catch (const std::exception& e) {
-			//if(e.what() != "Unknown exception")
-			//	printf("[ERROR] %s\n", e.what());
+			if(e.what() != "Unknown exception")
+				printf("[ERROR] %s\n", e.what());
 		}
 	}
+
+	cout << endl << "Set:" << endl;
+	for (auto it = Socket::seenHosts.begin(); it != Socket::seenHosts.end(); it++) {
+		cout << *it << endl;
+	}
+
+
 
 	
 	// cleanup!
 	WSACleanup();
-	inputFile.close();
+	myinputFile.close();
 
 
 
 	return 0;
-	*/
 
+	*/
 	/*
 	WSADATA wsaData;
 
@@ -128,6 +137,9 @@ int main(int argc, char* argv[]) {
 	return 1;
 
 	*/
+
+
+
 	// ----------------------------------------------------
 
 

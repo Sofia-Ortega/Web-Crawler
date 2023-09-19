@@ -28,13 +28,13 @@ public:
 	char* path;
 	char* query;
 	
-	char* request;
-	char* baseUrl;
+	char* request = nullptr;
+	char* baseUrl = nullptr;
 
 	Url(char* urlInput);
 
 	Url();
-	Url(const Url&& other);
+	Url(Url&& other);
 	Url& operator=(Url&& other);
 
 	void deleteUrl();
