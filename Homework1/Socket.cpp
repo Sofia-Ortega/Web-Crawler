@@ -135,6 +135,7 @@ Socket::Socket(char* link) {
 	startClock();
 
 	char* getRobotRequest = formatRobotRequest();
+	printf("\nThe robot request: \n%s \n", getRobotRequest);
 	int readResult = readRequestIntoBuffer(getRobotRequest, roboSock, 16384);
 	if (readResult == -1) {
 		throw std::exception();
@@ -386,6 +387,7 @@ void Socket::Read(void) {
 	startClock();
 
 	char* getRequest = formatGetRequest();
+	printf("\nThe get request: \n%s \n", getRequest);
 	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
 	if (readResult == -1) {
 		return;

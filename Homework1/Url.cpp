@@ -63,7 +63,7 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 
 	// Path
 	// find / -> path -> remove
-	char* forwardSlash = strrchr(url, '/');
+	char* forwardSlash = strchr(url, '/');
 	if (forwardSlash != nullptr) {
 		this->path = forwardSlash + 1; // FIXME must add forward slash in request
 		*forwardSlash = '\0';
@@ -144,7 +144,6 @@ Url::Url() : request(nullptr), baseUrl(nullptr) {}
 
 
 void Url::deleteUrl() {
-	printf("Destructor called for %s\n", baseUrl);
 	if (request)
 		delete request;
 
@@ -154,11 +153,9 @@ void Url::deleteUrl() {
 
 Url::Url(const Url&& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {
 
-	printf("move constructor called \n");
 }
 
 Url& Url::operator=(Url&& other) {
-	printf("copy assignment called \n");
 	if (this != &other) {
 
 		deleteUrl();
