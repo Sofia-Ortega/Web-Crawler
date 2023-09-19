@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
 	// ----------------------------------------------------
 
 
-	int numThreads = 1;
+	int numThreads = 10;
 	const char* inputFile = "URL-input-100.txt";
 
 	HANDLE* handles = new HANDLE[numThreads + 1];

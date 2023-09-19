@@ -96,8 +96,6 @@ void Crawler::statsUnlock() {
 
 void Crawler::Run() {
 
-	int waitTime = GetCurrentThreadId() / 10;
-	
 	// sync 
 	while (!q.empty()) {
 		queueLock();
@@ -114,9 +112,6 @@ void Crawler::Run() {
 			queueUnlock();
 			break;
 		}
-
-		
-
 
 
 		// read 
@@ -140,33 +135,37 @@ void Crawler::Run() {
 			totalLinks += sock.numOfLinks;
 
 			int statusCode = sock.statusCode;
+
+
+			if (statusCode != -1) {
+				printf("\tThe status code: %i\n", statusCode);
+				statusCode /= 100;
+
+				if (statusCode == 2) {
+					status200++;
+				}
+				else if (statusCode == 3) {
+					status300++;
+				}
+				else if (statusCode == 4) {
+					status400++;
+				}
+				else if (statusCode == 5) {
+					status500++;
+				}
+				else {
+					statusOther++;
+				}
+				printf("\tHTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
+			}
+
 			statsUnlock();
 
 
-			if (statusCode == -1) {}
-			else if (statusCode < 200 || statusCode > 500) {
-				statusOther++;
-			}
-			else if (statusCode < 300) {
-				status200++;
-			}
-			else if (statusCode < 400) {
-				status300++;
-			}
-			else if (statusCode < 500) {
-				status400++;
-			}
-			else {
-				status500++;
-			}
-
-
-		//	Sleep(waitTime); // FIXME: delete me
-
 		}
 		catch (const std::exception& e) {
-			if (e.what() != "Unknown exception")
-				printf("[ERROR] %s", e.what());
+			// if (e.what() != "Unknown exception")
+			// 	 printf("[ERROR] %s\n", e.what());
 		}
 	}
 
@@ -181,6 +180,9 @@ void Crawler::printStats() {
 
 	clock_t startTime = clock();
 	clock_t startTimeBetweenStatsThreadWakeup = clock();
+
+	int bytesDownloadedLastStatsThreadWakeup = 0;
+
 
 	while (true) {
 
@@ -212,13 +214,13 @@ void Crawler::printStats() {
 		int C = crawledUrls;
 		int L = totalLinks;
 
-		int tempBytesDownloaded = bytesDownloaded; // DELETE
+		int tempBytesDownloaded = bytesDownloaded - bytesDownloadedLastStatsThreadWakeup; 
+		bytesDownloadedLastStatsThreadWakeup = bytesDownloaded;
 
 		int timeElapsedSinceLastStatsThread = (int)(clock() - startTimeBetweenStatsThreadWakeup) / (CLOCKS_PER_SEC);
 
-
 		float crawlingSpeed = C / 2000; // pages per second
-		float downloadRate = (bytesDownloaded / 2000) * 8; // bytes to bits conversion
+		float downloadRate = (tempBytesDownloaded / 2000) * 8; // bytes to bits conversion
 
 		statsUnlock();
 
@@ -252,6 +254,6 @@ void Crawler::printSummary() {
 	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, 0);
 	printf("Crawled %i pages @ %i/s (0.23MB)\n", crawledUrls, 0);
 	printf("Parsed %i links @ %i/s\n", totalLinks, 0);
-	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", 5, status200, status300, status400, status500);
+	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
 }
 

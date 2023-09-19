@@ -15,7 +15,7 @@
 set<DWORD> Socket::seenIPs;
 set<char*, Socket::CharPointerComparator> Socket::seenHosts;
 
-Socket::Socket(char* link) {
+Socket::Socket(char* link) : url(Url(link)) {
 
 	uniqueHost = 0;
 	successfulDNSNum = 0;
@@ -33,9 +33,6 @@ Socket::Socket(char* link) {
 	this->buffer = new char[BUFFER_SIZE];
 	this->capacity = BUFFER_SIZE;
 	this->size = 0;
-
-	this->url = Url(link);
-	printf("Request test: %s\n", url.request);
 
 	// check if host duplicate
 //	printf("\tChecking host uniqueness...");
@@ -135,7 +132,6 @@ Socket::Socket(char* link) {
 	startClock();
 
 	char* getRobotRequest = formatRobotRequest();
-	printf("\nThe robot request: \n%s \n", getRobotRequest);
 	int readResult = readRequestIntoBuffer(getRobotRequest, roboSock, 16384);
 	if (readResult == -1) {
 		throw std::exception();
@@ -387,7 +383,6 @@ void Socket::Read(void) {
 	startClock();
 
 	char* getRequest = formatGetRequest();
-	printf("\nThe get request: \n%s \n", getRequest);
 	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
 	if (readResult == -1) {
 		return;
@@ -404,9 +399,8 @@ void Socket::Read(void) {
 	int myStatusCode = getStatusCode();
 	if (myStatusCode == -1) return;
 
-	this->statusCode = myStatusCode;
 
-	 printf(" \t status code %i\n", statusCode);
+	 // printf(" \t status code %i\n", statusCode);
 
 
 	// ***************** Print Header ****************
@@ -425,6 +419,7 @@ void Socket::Read(void) {
 	}
 
 	crawledUrlSuccess = 1;
+	this->statusCode = myStatusCode;
 
 	// ***************** Parse ********************
 	if (myStatusCode >= 200 && myStatusCode <= 299) {

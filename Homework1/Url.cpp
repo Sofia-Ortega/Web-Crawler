@@ -135,7 +135,7 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 	
 	strcat(request, "\0");
 
-	printf("host %s, port %i, path %s, request %s\n", host, port, path, this->request);
+	// printf("host %s, port %i, path %s, request %s\n", host, port, path, this->request);
 
 
 }
