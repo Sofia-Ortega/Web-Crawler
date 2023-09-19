@@ -50,14 +50,16 @@ void Crawler::ReadFile(const char* inputFileName) {
 	inputFile.seekg(0, inputFile.beg);
 
 
+	int counter = 0;
 	string line;
 	while (getline(inputFile, line)) {
 		try {
 			char* link = new char[line.length() + 1];
 			strcpy_s(link, line.length() + 1, line.c_str());
 
-			// Url url(link);
-			q.push(Url(link));
+			q.push(link);
+			
+			printf("[%i] %s\n", ++counter, link);
 		}
 		catch (const std::exception& e) {
 			printf("[ERROR] %s\n", e.what());
@@ -100,22 +102,27 @@ void Crawler::Run() {
 	while (!q.empty()) {
 		queueLock();
 
-		Url url;
+		char* link = nullptr;
 		if (!q.empty()) {
 
-			url = q.front();
+			link = q.front();
 			// printf("thread Run %d with wait time %d started running with %s\n", GetCurrentThreadId(), waitTime, q.front().baseUrl.c_str()); // print inside mutex to avoid garbage
 			q.pop();
+			queueUnlock();
+		}
+		else {
+			queueUnlock();
+			break;
 		}
 
 		
-		queueUnlock();
+
 
 
 		// read 
 		
 		try {
-			Socket sock(url);
+			Socket sock(link);
 			sock.Read();
 
 			statsLock();

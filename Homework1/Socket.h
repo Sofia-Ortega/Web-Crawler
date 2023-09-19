@@ -83,7 +83,7 @@ public:
 
 	int statusCode;
 
-	Socket(const Url& urlInput);
+	Socket(char* link);
 	~Socket();
 	void Read(void);
 	void Parse(void);

@@ -15,8 +15,8 @@
 set<DWORD> Socket::seenIPs;
 set<char*, Socket::CharPointerComparator> Socket::seenHosts;
 
-Socket::Socket(const Url& urlInput) {
-	
+Socket::Socket(char* link) {
+
 	uniqueHost = 0;
 	successfulDNSNum = 0;
 	uniqueIp = 0;
@@ -34,7 +34,8 @@ Socket::Socket(const Url& urlInput) {
 	this->capacity = BUFFER_SIZE;
 	this->size = 0;
 
-	this->url = Url(urlInput);
+	this->url = Url(link);
+	printf("Request test: %s\n", url.request);
 
 	// check if host duplicate
 //	printf("\tChecking host uniqueness...");
@@ -183,6 +184,8 @@ Socket::~Socket() {
 	closesocket(sock);
 	if(buffer) 
 		delete[] buffer;
+
+	url.deleteUrl();
 }
 
 

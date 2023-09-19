@@ -7,7 +7,7 @@
 class Crawler
 {
 private:
-	std::queue<Url> q;
+	std::queue<char*> q;
 
 	HANDLE mutexQueue;
 	HANDLE mutexStats;

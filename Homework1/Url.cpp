@@ -121,13 +121,12 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 		throw std::exception("Request length too long");
 	}
 
-	request = new char[requestLength];
+	this->request = new char[requestLength];
 	request[0] = '/';
 
 	if (path)
 		strcpy(request + 1, path);
 
-	printf("with path %s, current request %s with path", path, request);
 
 	if (query) {
 		strcat(request, "?");
@@ -136,14 +135,15 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 	
 	strcat(request, "\0");
 
-	printf("host %s, port %i, path %s, request %s\n", host, port, path, request);
+	printf("host %s, port %i, path %s, request %s\n", host, port, path, this->request);
 
 
 }
 
 Url::Url() : request(nullptr), baseUrl(nullptr) {}
 
-Url::~Url() {
+
+void Url::deleteUrl() {
 	printf("Destructor called for %s\n", baseUrl);
 	if (request)
 		delete request;
@@ -152,10 +152,17 @@ Url::~Url() {
 		delete baseUrl;
 }
 
-Url::Url(const Url& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {}
+Url::Url(const Url&& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {
 
-Url& Url::operator=(const Url& other) {
+	printf("move constructor called \n");
+}
+
+Url& Url::operator=(Url&& other) {
+	printf("copy assignment called \n");
 	if (this != &other) {
+
+		deleteUrl();
+
 		scheme = other.scheme;
 		host = other.host;
 		port = other.port;
@@ -164,8 +171,8 @@ Url& Url::operator=(const Url& other) {
 		request = other.request;
 		baseUrl = other.baseUrl;
 
-		request = nullptr;
-		baseUrl = nullptr;
+		other.request = nullptr;
+		other.baseUrl = nullptr;
 
 	}
 

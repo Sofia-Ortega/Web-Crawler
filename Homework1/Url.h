@@ -34,9 +34,10 @@ public:
 	Url(char* urlInput);
 
 	Url();
-	~Url();
-	Url(const Url& other);
-	Url& operator=(const Url& other);
+	Url(const Url&& other);
+	Url& operator=(Url&& other);
+
+	void deleteUrl();
 
 	char* getAddress();
 	char* getBaseUrl();
