@@ -32,7 +32,7 @@ Crawler::~Crawler() {
 	WSACleanup();
 }
 
-void Crawler::ReadFile(string inputFileName) {
+void Crawler::ReadFile(const char* inputFileName) {
 
 	std::ifstream inputFile(inputFileName);
 	
@@ -45,19 +45,22 @@ void Crawler::ReadFile(string inputFileName) {
 	inputFile.seekg(0, inputFile.end);
 	int fileSize = (int)inputFile.tellg();
 
-	printf("Opened %s with size %i\n", inputFileName.c_str(), fileSize);
+	printf("Opened %s with size %i\n", inputFileName, fileSize);
 
 	inputFile.seekg(0, inputFile.beg);
 
 
-	char link[MAX_URL_LEN];
-	while (inputFile.getline(link, MAX_URL_LEN)) {
+	string line;
+	while (getline(inputFile, line)) {
 		try {
-			Url url(link);
-			q.push(url);
+			char* link = new char[line.length() + 1];
+			strcpy_s(link, line.length() + 1, line.c_str());
+
+			// Url url(link);
+			q.push(Url(link));
 		}
 		catch (const std::exception& e) {
-			printf("[ERROR] %s", e.what());
+			printf("[ERROR] %s\n", e.what());
 		}
 	}
 

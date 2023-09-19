@@ -46,7 +46,7 @@ public:
 	Crawler(int numOfThreads);
 	~Crawler();
 
-	void ReadFile(string inputFileName);
+	void ReadFile(const char* inputFileName);
 	void Run();
 	void printStats();
 	void printSummary();

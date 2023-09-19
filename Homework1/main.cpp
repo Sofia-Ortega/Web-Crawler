@@ -131,8 +131,8 @@ int main(int argc, char* argv[]) {
 	// ----------------------------------------------------
 
 
-	int numThreads = 10;
-	string inputFile = "URL-input-100.txt";
+	int numThreads = 1;
+	const char* inputFile = "URL-input-100.txt";
 
 	HANDLE* handles = new HANDLE[numThreads + 1];
 	Crawler crawler = Crawler(numThreads);

@@ -11,7 +11,7 @@
 #include <iostream>
 
 
-Url::Url(char* urlInput) {
+Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 
 	// scheme://host[:port][/path][?query][#fragment] 
 
@@ -34,8 +34,6 @@ Url::Url(char* urlInput) {
 	}
 
 	// get scheme -> remove
-	url += 7;
-
 	if (strncmp(url, "http://", 7) != 0) {
 		throw std::invalid_argument("failed with invalid scheme");
 	}
@@ -45,9 +43,9 @@ Url::Url(char* urlInput) {
 
 	// Hashtag
 	// find # -> remove 
-	 char* hashTag = strrchr(url, '#');
+	char* hashTag = strrchr(url, '#');
 	if (hashTag != nullptr) {
-		hashTag = '\0';
+		*hashTag = '\0';
 	}
 
 
@@ -56,7 +54,7 @@ Url::Url(char* urlInput) {
 	char* questionMark = strrchr(url, '?');
 	if (questionMark != nullptr) {
 		this->query = questionMark + 1;
-		questionMark = '\0'; // truncate
+		*questionMark = '\0'; // truncate
 	}
 	else {
 		this->query = nullptr;
@@ -68,7 +66,7 @@ Url::Url(char* urlInput) {
 	char* forwardSlash = strrchr(url, '/');
 	if (forwardSlash != nullptr) {
 		this->path = forwardSlash + 1; // FIXME must add forward slash in request
-		forwardSlash = '\0';
+		*forwardSlash = '\0';
 	}
 	else {
 		this->path = nullptr;
@@ -93,7 +91,7 @@ Url::Url(char* urlInput) {
 			throw std::invalid_argument("failed with invalid port");
 		}
 
-		twoDots = '\0';
+		*twoDots = '\0';
 	}
 	else {
 		this->port = 80;
@@ -127,22 +125,26 @@ Url::Url(char* urlInput) {
 	request[0] = '/';
 
 	if (path)
-		strcat(request, path);
+		strcpy(request + 1, path);
+
+	printf("with path %s, current request %s with path", path, request);
 
 	if (query) {
 		strcat(request, "?");
 		strcat(request, query);
 	}
+	
+	strcat(request, "\0");
 
-
-	// printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
+	printf("host %s, port %i, path %s, request %s\n", host, port, path, request);
 
 
 }
 
-Url::Url() : request(nullptr) {}
+Url::Url() : request(nullptr), baseUrl(nullptr) {}
 
 Url::~Url() {
+	printf("Destructor called for %s\n", baseUrl);
 	if (request)
 		delete request;
 
@@ -161,6 +163,10 @@ Url& Url::operator=(const Url& other) {
 		query = other.query;
 		request = other.request;
 		baseUrl = other.baseUrl;
+
+		request = nullptr;
+		baseUrl = nullptr;
+
 	}
 
 	return *this;
