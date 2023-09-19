@@ -24,13 +24,22 @@
 using std::string;
 using std::set;
 
+
 class Socket
 {
 private:
+
+	// Custom comparator for char*
+	struct CharPointerComparator {
+		bool operator()(const char* a, const char* b) const {
+			return std::strcmp(a, b) < 0;
+		}
+	};
+
 	const int BUFFER_SIZE = 1024;
 
 	static set<DWORD> seenIPs;
-	static set<string> seenHosts;
+	static set<char*, CharPointerComparator> seenHosts;
 
 	char* buffer;
 	int size;
@@ -44,8 +53,8 @@ private:
 
 	SOCKET sock;
 
-	string formatGetRequest();
-	string formatRobotRequest();
+	char* formatGetRequest();
+	char* formatRobotRequest();
 
 
 	void resizeBuffer();
@@ -58,7 +67,7 @@ private:
 
 	int getStatusCode();
 
-	int readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize);
+	int readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
 	short uniqueHost;

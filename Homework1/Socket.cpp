@@ -10,8 +10,10 @@
 
 #include "Socket.h"
 
+
+
 set<DWORD> Socket::seenIPs;
-set<string> Socket::seenHosts;
+set<char*, Socket::CharPointerComparator> Socket::seenHosts;
 
 Socket::Socket(const Url& urlInput) {
 	
@@ -115,13 +117,12 @@ Socket::Socket(const Url& urlInput) {
 	// connect to robot page
 //	printf("\tConnecting on robots... ");
 	robotAttempted = 1;
-	printf("\nRobot has been attempted\n");
 
 	startClock();
 
 	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
-		printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl.c_str());
+		printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl);
 		throw std::exception();
 		return;
 	}
@@ -132,25 +133,28 @@ Socket::Socket(const Url& urlInput) {
 //	printf("\tLoading...");
 	startClock();
 
-	int readResult = readRequestIntoBuffer(formatRobotRequest(), roboSock, 16384);
+	char* getRobotRequest = formatRobotRequest();
+	int readResult = readRequestIntoBuffer(getRobotRequest, roboSock, 16384);
 	if (readResult == -1) {
 		throw std::exception();
 		return;
 	}
 
-//	printf("done in %i ms with %i bytes\n", endClock(), size);
+	delete[] getRobotRequest;
+
+	//	printf("done in %i ms with %i bytes\n", endClock(), size);
 
 	closesocket(roboSock);
 
 
 	// check status header
 //	printf("\tVerifying header... ");
-	int statusCode = getStatusCode();
+	int roboStatusCode = getStatusCode();
 //	printf("status code %i\n", statusCode);
 
 
 	// check if robots.txt exists
-	if (statusCode >= 400 && statusCode <= 499) {
+	if (roboStatusCode >= 400 && roboStatusCode <= 499) {
 		robotsNotAllowed = false;
 		passedRobots++;
 	}
@@ -181,30 +185,78 @@ Socket::~Socket() {
 		delete[] buffer;
 }
 
-string Socket::formatGetRequest() {
-	string s;
-
-	s  = "GET " + url.request + " HTTP/1.0\r\n";
-	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
-	s += "Host: " + url.host + "\r\n";
-	s += "Connection: close\r\n";
-	s += "\r\n";
 
 
-	return s;
+char * Socket::formatGetRequest() {
+	
+	const char* a = "GET ";
+	const char* b = url.request;
+	const char* c = " HTTP/1.0\r\n";
+
+	const char* d = "User-agent: SofiaSpyCrawler/1.1\r\n";
+	const char* e = "Host: ";
+	const char* f = url.host;
+	const char* g = "\r\n";
+
+	const char* h = "Connection: close\r\n\r\n";
+
+
+	// total length of http request
+	size_t getRequestLength = strlen(a) + strlen(b) + strlen(c) +
+		strlen(d) + strlen(e) + strlen(f) + strlen(g) + strlen(h) + 1;
+
+
+	char* getRequest = new char[getRequestLength];
+
+	strcpy_s(getRequest, getRequestLength, a);
+	strcat_s(getRequest, getRequestLength, b);
+	strcat_s(getRequest, getRequestLength, c);
+	strcat_s(getRequest, getRequestLength, d);
+	strcat_s(getRequest, getRequestLength, e);
+	strcat_s(getRequest, getRequestLength, f);
+	strcat_s(getRequest, getRequestLength, g);
+	strcat_s(getRequest, getRequestLength, h);
+
+	getRequest[getRequestLength - 1] = '\0';
+
+	return getRequest;
 
 }
 
-string Socket::formatRobotRequest() {
-	string s;
+char* Socket::formatRobotRequest() {
 
-	s  = "HEAD /robots.txt HTTP/1.0\r\n";
-	s += "User-agent: SofiaSpyCrawler/1.1\r\n";
-	s += "Host: " + url.host + "\r\n";
-	s += "Connection: close\r\n";
-	s += "\r\n";
+	const char* a  = "HEAD /robots.txt HTTP/1.0\r\n";
+	const char* b  = "User-agent: SofiaSpyCrawler/1.1\r\n";
+	
+	const char* c = "Host: ";
+	const char* d = url.host;
+	const char* e = "\r\n";
 
-	return s;
+	const char* f = "Connection: close\r\n";
+	const char* g = "\r\n";
+
+	// total length of http request
+	size_t getRequestLength = strlen(a) + strlen(b) + strlen(c) +
+		strlen(d) + strlen(e) + strlen(f) + strlen(g) + 1;
+
+
+	// allocate memory
+	char* getRequest = new char[getRequestLength];
+
+	// format getRequest
+	strcpy_s(getRequest, getRequestLength, a);
+	strcat_s(getRequest, getRequestLength, b);
+	strcat_s(getRequest, getRequestLength, c);
+	strcat_s(getRequest, getRequestLength, d);
+	strcat_s(getRequest, getRequestLength, e);
+	strcat_s(getRequest, getRequestLength, f);
+	strcat_s(getRequest, getRequestLength, g);
+
+
+	getRequest[getRequestLength - 1] = '\0';
+
+	return getRequest;
+
 }
 
 int Socket::getStatusCode() {
@@ -255,11 +307,11 @@ int Socket::endClock() {
 	return (int)timeElapsed / (CLOCKS_PER_SEC / 1000);
 }
 
-int Socket::readRequestIntoBuffer(string getRequest, SOCKET mySock, int maxDownloadSize) {
+int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownloadSize) {
 	
-	size_t sendResult = send(mySock, getRequest.c_str(), (int)getRequest.size(), 0);
+	size_t sendResult = send(mySock, getRequest, (int)strlen(getRequest), 0);
 	if (sendResult == SOCKET_ERROR) {
-		printf("Sending error: %d with url %s\n", WSAGetLastError(), url.baseUrl.c_str());
+		printf("Sending error: %d with url %s\n", WSAGetLastError(), url.baseUrl);
 		return -1;
 	}
 
@@ -330,11 +382,13 @@ void Socket::Read(void) {
 	// printf("\tLoading... ");
 	startClock();
 
-	const string getRequest = formatGetRequest();
+	char* getRequest = formatGetRequest();
 	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
 	if (readResult == -1) {
 		return;
 	}
+
+	delete[] getRequest;
 
 
 	// printf("done in %i ms with %i bytes\n", endClock(), size);
@@ -347,7 +401,7 @@ void Socket::Read(void) {
 
 	this->statusCode = myStatusCode;
 
-	// printf(" status code %i\n", statusCode);
+	 printf(" \t status code %i\n", statusCode);
 
 
 	// ***************** Print Header ****************

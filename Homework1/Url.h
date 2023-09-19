@@ -22,18 +22,19 @@ class Url
 private:
 
 public:
-	string scheme;
-	string host; 
+	char* scheme;
+	char* host; 
 	int port;
-	string path;
-	string query;
+	char* path;
+	char* query;
 	
-	string request;
-	string baseUrl;
+	char* request;
+	char* baseUrl;
 
-	Url(string urlInput);
+	Url(char* urlInput);
 
 	Url();
+	~Url();
 	Url(const Url& other);
 	Url& operator=(const Url& other);
 

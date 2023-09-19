@@ -1,6 +1,8 @@
 #include "Crawler.h"
 
 
+#define MAX_URL_LEN			2048
+
 Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOfDnsLookups(0), uniqueIps(0), passedRobots(0), crawledUrls(0), totalLinks(0), status200(0), status300(0), status400(0), status500(0), statusOther(0) {
 	this->maxThreadNum = numOfThreads;
 	finishedThreads = 0;
@@ -47,8 +49,9 @@ void Crawler::ReadFile(string inputFileName) {
 
 	inputFile.seekg(0, inputFile.beg);
 
-	string link;
-	while (std::getline(inputFile, link)) {
+
+	char link[MAX_URL_LEN];
+	while (inputFile.getline(link, MAX_URL_LEN)) {
 		try {
 			Url url(link);
 			q.push(url);

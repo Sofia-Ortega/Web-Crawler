@@ -11,7 +11,7 @@
 #include <iostream>
 
 
-Url::Url(string urlInput) {
+Url::Url(char* urlInput) {
 
 	// scheme://host[:port][/path][?query][#fragment] 
 
@@ -22,66 +22,67 @@ Url::Url(string urlInput) {
 	// find : -> port -> remove -> host
 
 
-	// printf("URL: %s\n", urlInput.c_str());
+	// printf("URL: %s\n", urlInput);
 	// printf("\tParsing URL... ");
 
 	baseUrl = urlInput;
-	string url = urlInput;
+	char* url = urlInput;
 
-	if (url.length() > MAX_URL_LEN) {
+	if (strlen(url) > MAX_URL_LEN) {
 		throw std::exception(" URL Length too long");
 		return;
 	}
 
 	// get scheme -> remove
-	string scheme = url.substr(0, 7);
-	if (scheme != "http://") {
+	url += 7;
+
+	if (strncmp(url, "http://", 7) != 0) {
 		throw std::invalid_argument("failed with invalid scheme");
 	}
 
-	 url = url.substr(7);
+	 url += 7;
 
 
 	// Hashtag
 	// find # -> remove 
-	size_t hashTag = url.find_last_of('#');
-	if (hashTag != string::npos) {
-		url = url.substr(0, hashTag);
+	 char* hashTag = strrchr(url, '#');
+	if (hashTag != nullptr) {
+		hashTag = '\0';
 	}
 
 
 	// Query
 	// find ? -> query -> remove
-	size_t questionMark = url.find_last_of('?');
-	if (questionMark != std::string::npos) {
-		this->query = url.substr(questionMark + 1);
-		url = url.substr(0, questionMark);
+	char* questionMark = strrchr(url, '?');
+	if (questionMark != nullptr) {
+		this->query = questionMark + 1;
+		questionMark = '\0'; // truncate
 	}
 	else {
-		this->query = "";
+		this->query = nullptr;
 	}
 
 
 	// Path
 	// find / -> path -> remove
-	size_t forwardSlash = url.find('/');
-	if (forwardSlash != std::string::npos) {
-		this->path = url.substr(forwardSlash);
-		url = url.substr(0, forwardSlash);
+	char* forwardSlash = strrchr(url, '/');
+	if (forwardSlash != nullptr) {
+		this->path = forwardSlash + 1; // FIXME must add forward slash in request
+		forwardSlash = '\0';
 	}
 	else {
-		this->path = "/";
+		this->path = nullptr;
 	}
 
 	// Port
 	// find : -> port -> remove
-	size_t twoDots = url.find_last_of(':');
-	if (twoDots != std::string::npos) {
-		string portStr = url.substr(twoDots + 1);
+	char* twoDots = strrchr(url, ':');
+	if (twoDots != nullptr) {
+		char* portStr = twoDots + 1;
 
 		// convert port to int
 		try {
-			this->port = stoi(portStr);
+			this->port = std::stoi(portStr);
 		}
 		catch (const std::exception& err) {
 			throw std::invalid_argument("failed with invalid port");
@@ -92,7 +93,7 @@ Url::Url(string urlInput) {
 			throw std::invalid_argument("failed with invalid port");
 		}
 
-		url = url.substr(0, twoDots);
+		twoDots = '\0';
 	}
 	else {
 		this->port = 80;
@@ -101,22 +102,37 @@ Url::Url(string urlInput) {
 
 	// Host
 	this->host = url;
-	if (host.length() > MAX_HOST_LEN) {
+	if (strlen(host) > MAX_HOST_LEN) {
 		throw std::exception("Host URL Length too long");
 	}
 
-	// combine
-	this->request = path;
 
-	if (query != "") {
-		request += "?" + query;
+	// Request
+	size_t pathLength = 0;
+	if (path)
+		pathLength = strlen(path);
 
+	size_t queryLength = 0;
+	if (query)
+		queryLength = strlen(query);
+
+	size_t requestLength = pathLength + 2; // for null terminated string + extra /
+	requestLength += queryLength + 1;
+
+	if (requestLength > MAX_REQUEST_LEN) {
+		throw std::exception("Request length too long");
 	}
 
-	if (request.length() > MAX_REQUEST_LEN) {
-		throw std::exception("Request Length too long");
-	}
+	request = new char[requestLength];
+	request[0] = '/';
 
+	if (path)
+		strcat(request, path);
+
+	if (query) {
+		strcat(request, "?");
+		strcat(request, query);
+	}
 
 
 	// printf("host %s, port %i, request %s\n", host.c_str(), port, request.c_str());
@@ -124,7 +140,15 @@ Url::Url(string urlInput) {
 
 }
 
-Url::Url() {}
+Url::Url() : request(nullptr) {}
+
+Url::~Url() {
+	if (request)
+		delete request;
+
+	if (baseUrl)
+		delete baseUrl;
+}
 
 Url::Url(const Url& other) : scheme(other.scheme), host(other.host), port(other.port), path(other.path), query(other.query), request(other.request), baseUrl(other.baseUrl) {}
 
@@ -143,25 +167,10 @@ Url& Url::operator=(const Url& other) {
 } 
 
 char* Url::getAddress() {
-
-	size_t length = host.size() + 1;
-	char* res = new char[length];
-
-	memset(res, '\0', length);
-	strcpy_s(res, length, host.c_str());
-
-	return res;
-
+	return host;
 }
 
 char* Url::getBaseUrl() {
-
-	size_t length = baseUrl.size() + 1;
-	char* res = new char[length];
-
-	memset(res, '\0', length);
-	strcpy_s(res, length, baseUrl.c_str());
-
-	return res;
+	return baseUrl;
 
 }
