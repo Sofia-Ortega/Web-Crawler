@@ -144,8 +144,10 @@ int main(int argc, char* argv[]) {
 
 
 	int numThreads = 500;
-	const char* inputFile = "input2019.txt";
-	// const char* inputFile = "URL-input-100.txt";
+///	const char* inputFile = "input2019.txt";
+//	 const char* inputFile = "URL-input-100.txt";
+	 const char* inputFile = "URL-input-1M.txt";
+
 
 	bool runStatsThread = true;
 

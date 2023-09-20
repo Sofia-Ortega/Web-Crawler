@@ -172,7 +172,6 @@ Socket::Socket(char* link) : url(Url(link)) {
 	}
 
 	delete[] getRobotRequest;
-	passedRobots++;
 
 	//	printf("done in %i ms with %i bytes\n", endClock(), size);
 
@@ -188,6 +187,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 	// check if robots.txt exists
 	if (roboStatusCode >= 400 && roboStatusCode <= 499) {
 		robotsNotAllowed = false;
+		passedRobots++;
 	}
 	else {
 		robotsNotAllowed = true;
@@ -376,7 +376,6 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 				// printf("\nbytes read: %i\n", bytes);
 			}
 			else if (bytes == 0) {
-				// FIXME: make sure space for null terminated 
 				buffer[size] = '\0';
 				bytesDownloaded += size;
 				size++;

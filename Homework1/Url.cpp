@@ -65,7 +65,7 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 	// find / -> path -> remove
 	char* forwardSlash = strchr(url, '/');
 	if (forwardSlash != nullptr) {
-		this->path = forwardSlash + 1; // FIXME must add forward slash in request
+		this->path = forwardSlash + 1; 
 		*forwardSlash = '\0';
 	}
 	else {
