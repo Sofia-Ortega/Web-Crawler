@@ -42,12 +42,13 @@ Socket::Socket(char* link) : url(Url(link)) {
 	string host = url.host;
 	auto seenHostResult = seenHosts.insert(host);
 	if (seenHostResult.second == false) {
-	//	printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
+		// printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
+
 		return;
 		throw std::exception("failed - Duplicate Host");
 	}
 	uniqueHost = 1; // passed host uniqueness
-	// printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
+//	printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
 //	printf("passed\n");
 
 //	printf("\tDoing DNS... ");
@@ -83,6 +84,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 		// if not valid ip, do DNS Lookup
 		remote = gethostbyname(address);
 		if (remote == NULL) {
+			// printf("DNS Lookup failed for url: %s\n", url.baseUrl);
 			// throw std::exception("Invalid string: neither FQDN nor IP address \n");
 			return;
 		}
@@ -128,8 +130,8 @@ Socket::Socket(char* link) : url(Url(link)) {
 	int connectResult = connect(roboSock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult == SOCKET_ERROR) {
 		// printf("Connection error %d for url %s\n", WSAGetLastError(), url.baseUrl);
-		throw std::exception();
 		return;
+		throw std::exception();
 	}
 //	printf("done in %i ms\n", endClock());
 
@@ -141,8 +143,8 @@ Socket::Socket(char* link) : url(Url(link)) {
 	char* getRobotRequest = formatRobotRequest();
 	int readResult = readRequestIntoBuffer(getRobotRequest, roboSock, 16384);
 	if (readResult == -1) {
-		throw std::exception();
 		return;
+		throw std::exception();
 	}
 
 	delete[] getRobotRequest;

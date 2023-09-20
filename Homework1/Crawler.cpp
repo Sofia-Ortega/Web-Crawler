@@ -62,7 +62,7 @@ void Crawler::ReadFile(const char* inputFileName) {
 
 			q.push(link);
 			
-			printf("[%i] %s\n", ++counter, link);
+			// printf("[%i] %s\n", ++counter, link);
 		}
 		catch (const std::exception& e) {
 			printf("[ERROR] %s\n", e.what());
@@ -74,8 +74,6 @@ void Crawler::ReadFile(const char* inputFileName) {
 	originalQueueSize = q.size();
 	uniqueHosts = 0;
 	uniqueIps = 0;
-
-	printf("Origininal Queue Size %d\n", originalQueueSize);
 }
 
 void Crawler::queueLock() {
@@ -126,6 +124,7 @@ void Crawler::Run() {
 			statsLock();
 			
 			uniqueHosts += sock.uniqueHost;
+
 			numOfDnsLookups += sock.successfulDNSNum;
 			uniqueIps += sock.uniqueIp;
 			passedRobots += sock.passedRobots;
@@ -168,7 +167,7 @@ void Crawler::Run() {
 		}
 		catch (const std::exception& e) {
 			 //if (e.what() != "Unknown exception")
-			 //	 printf("[ERROR] %s\n", e.what());
+			 printf("[ERROR] %s\n", e.what());
 		}
 	}
 
@@ -189,8 +188,6 @@ void Crawler::printStats() {
 
 	while (true) {
 
-
-		// FIXME: return back to 2000
 		DWORD waitResult = WaitForSingleObject(eventQuit, 2000); // Wait for 3 seconds or until the event is signaled
 		if (waitResult == WAIT_OBJECT_0) {
 			break;
@@ -233,7 +230,7 @@ void Crawler::printStats() {
 		L /= 1000;
 
 		printf("[%3d] %3d Q %6d E %7d H %6d D %6d I %5d R %5d C %5d L %4d K\n", timeElapsed, currNumOfActiveThreads, Q, E, H, D, I, R, C, L);
-		printf("\t*** crawling %.3g pps @ %.3g Mbps\n", crawlingSpeed, downloadRate / 1000000);
+		printf("\t*** crawling %.3g pps @ %.3g Mbps\n", crawlingSpeed, downloadRate);
 		
 
 		startTimeBetweenStatsThreadWakeup = clock();
@@ -251,12 +248,15 @@ void Crawler::quitStatsThread() {
 
 void Crawler::printSummary() {
 	int timeElapsed = (int)(clock() - startClockTimer) / (CLOCKS_PER_SEC);
+	if (timeElapsed == 0) timeElapsed = 1;
+
+	float mb = bytesDownloaded * 1.0 / 1000000;
 
 	printf("\n");
 	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, originalQueueSize / timeElapsed);
-	printf("Looked up %i DNS names @ %i/s\n", numOfDnsLookups, numOfDnsLookups / timeElapsed);
+	printf("Looked up %i DNS names @ %i/s\n", uniqueHosts, uniqueHosts / timeElapsed);
 	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, robotsAttempted / timeElapsed);
-	printf("Crawled %i pages @ %i/s (%3d MB)\n", crawledUrls, crawledUrls / timeElapsed, bytesDownloaded * 8);
+	printf("Crawled %i pages @ %i/s (%.2g MB)\n", crawledUrls, crawledUrls / timeElapsed, mb);
 	printf("Parsed %i links @ %i/s\n", totalLinks, totalLinks / timeElapsed);
 	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
 }

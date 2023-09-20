@@ -146,6 +146,8 @@ int main(int argc, char* argv[]) {
 	int numThreads = 10;
 	const char* inputFile = "URL-input-100.txt";
 
+	bool runStatsThread = true;
+
 	HANDLE* handles = new HANDLE[numThreads + 1];
 	Crawler crawler = Crawler(numThreads);
 
@@ -153,28 +155,26 @@ int main(int argc, char* argv[]) {
 	crawler.ReadFile(inputFile);
 
 	// start stats thread
-	handles[numThreads] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerStats, &crawler, 0, NULL);
+	if(runStatsThread) handles[numThreads] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerStats, &crawler, 0, NULL);
 
 	for (int i = 0; i < numThreads; i++) {
 		handles[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)startCrawlerRun, &crawler, 0, NULL);
 	}
-
-	// handles[numThreads]; // stat thread
 
 	for (int i = 0; i < numThreads; i++) {
 		WaitForSingleObject(handles[i], INFINITE);
 		CloseHandle(handles[i]);
 	}
 
-	
-	printf("terminating stats thread\n");
-	crawler.quitStatsThread();
+	if (runStatsThread) {
+		crawler.quitStatsThread();
 
-	WaitForSingleObject(handles[numThreads], INFINITE);
-	CloseHandle(handles[numThreads]);
+		WaitForSingleObject(handles[numThreads], INFINITE);
+		CloseHandle(handles[numThreads]);
+	}
+
 
 	crawler.printSummary();
-	printf("terminating main()\n");
 
 	return 0;
 
