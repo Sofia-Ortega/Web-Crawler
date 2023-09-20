@@ -16,6 +16,26 @@ set<DWORD> Socket::seenIPs;
 // set<char*, Socket::Comparator> Socket::seenHosts;
 set<string> Socket::seenHosts;
 
+HANDLE Socket::mutexIPs = CreateMutex(NULL, 0, NULL);
+HANDLE Socket::mutexHosts = CreateMutex(NULL, 0, NULL);
+
+
+void Socket::hostLock() {
+	WaitForSingleObject(mutexHosts, INFINITE);
+}
+
+void Socket::hostUnlock() {
+	ReleaseMutex(mutexHosts);
+}
+
+void Socket::IPsLock() {
+	WaitForSingleObject(mutexIPs, INFINITE);
+}
+
+void Socket::IPsUnlock() {
+	ReleaseMutex(mutexIPs);
+}
+
 Socket::Socket(char* link) : url(Url(link)) {
 
 	readReady = false;
@@ -40,7 +60,9 @@ Socket::Socket(char* link) : url(Url(link)) {
 	// check if host duplicate
 //	printf("\tChecking host uniqueness...");
 	string host = url.host;
+	hostLock();
 	auto seenHostResult = seenHosts.insert(host);
+	hostUnlock();
 	if (seenHostResult.second == false) {
 		// printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
 
@@ -76,13 +98,13 @@ Socket::Socket(char* link) : url(Url(link)) {
 	struct sockaddr_in server;
 
 	// assume ip is in IP address
-	char* address = url.getAddress();
+	// char* address = url.getAddress();
 
-	DWORD IP = inet_addr(address);
+	DWORD IP = inet_addr(url.host);
 	if (IP == INADDR_NONE) {
 
 		// if not valid ip, do DNS Lookup
-		remote = gethostbyname(address);
+		remote = gethostbyname(url.host);
 		if (remote == NULL) {
 			// printf("DNS Lookup failed for url: %s\n", url.baseUrl);
 			// throw std::exception("Invalid string: neither FQDN nor IP address \n");
@@ -112,7 +134,9 @@ Socket::Socket(char* link) : url(Url(link)) {
 	// check duplicate ip
 //	printf("\tChecking IP uniqueness...");
 	DWORD checkIP = server.sin_addr.s_addr;
+	IPsLock();
 	auto setResult = seenIPs.insert(checkIP);
+	IPsUnlock();
 	if (setResult.second == false) {
 		return;
 		throw std::exception("failed - Duplicate IP");
@@ -332,7 +356,7 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 
 
 	timeval timeout;
-	timeout.tv_sec = 3; // 10 seconds b4 it timesout
+	timeout.tv_sec = 10; // 10 seconds b4 it timesout
 	timeout.tv_usec = 0;
 
 	while (true) {
@@ -359,7 +383,7 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 				break;
 			}
 			else {
-				printf("reading failed in recv() %d\n", WSAGetLastError());
+				// printf("reading failed in recv() %d\n", WSAGetLastError());
 				return -1;
 			}
 
@@ -376,7 +400,7 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 
 		}
 		else if (selectResult == 0) {
-			printf("timeout exceeded\n");
+			// printf("timeout exceeded\n");
 			return -1;
 		}
 		else {

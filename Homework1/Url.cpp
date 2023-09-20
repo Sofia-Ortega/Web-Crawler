@@ -147,11 +147,12 @@ Url::Url() : request(nullptr), baseUrl(nullptr) {}
 
 
 void Url::deleteUrl() {
+
 	if (request)
-		delete request;
+		delete[] request;
 
 	if (baseUrl)
-		delete baseUrl;
+		delete[] baseUrl;
 	request = nullptr;
 	baseUrl = nullptr;
 }

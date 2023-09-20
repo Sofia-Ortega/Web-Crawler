@@ -69,12 +69,24 @@ private:
 
 	int readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownloadSize);
 
+	static HANDLE mutexHosts;
+	static HANDLE mutexIPs;
+
+	void hostLock();
+	void hostUnlock();
+
+	void IPsLock();
+	void IPsUnlock();
+
+	
+
 public:
 	Url url;
 
 	static set<DWORD> seenIPs;
 	//static set<char*, Comparator> seenHosts;
 	static set<string> seenHosts;
+
 
 
 	short uniqueHost;
