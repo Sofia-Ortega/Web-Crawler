@@ -23,6 +23,7 @@
 
 using std::strcmp;
 using std::set;
+using std::string;
 
 
 class Socket
@@ -43,11 +44,12 @@ private:
 	int size;
 	int capacity;
 
+	bool readReady;
+
 	bool robotsNotAllowed;
 
 
 
-	Url url;
 
 	SOCKET sock;
 
@@ -68,8 +70,12 @@ private:
 	int readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownloadSize);
 
 public:
+	Url url;
+
 	static set<DWORD> seenIPs;
-	static set<char*, Comparator> seenHosts;
+	//static set<char*, Comparator> seenHosts;
+	static set<string> seenHosts;
+
 
 	short uniqueHost;
 	short successfulDNSNum;

@@ -139,6 +139,8 @@ void Crawler::Run() {
 
 			int statusCode = sock.statusCode;
 
+			
+			// printf("%s,%s,%i\n", sock.url.baseUrl, sock.url.host, sock.uniqueHost);
 
 			if (statusCode != -1) {
 				statusCode /= 100;
@@ -165,8 +167,8 @@ void Crawler::Run() {
 
 		}
 		catch (const std::exception& e) {
-			// if (e.what() != "Unknown exception")
-			// 	 printf("[ERROR] %s\n", e.what());
+			 //if (e.what() != "Unknown exception")
+			 //	 printf("[ERROR] %s\n", e.what());
 		}
 	}
 
@@ -231,7 +233,7 @@ void Crawler::printStats() {
 		L /= 1000;
 
 		printf("[%3d] %3d Q %6d E %7d H %6d D %6d I %5d R %5d C %5d L %4d K\n", timeElapsed, currNumOfActiveThreads, Q, E, H, D, I, R, C, L);
-		printf("\t*** crawling %.3g pps @ %.3g Mbps\n", crawlingSpeed, downloadRate);
+		printf("\t*** crawling %.3g pps @ %.3g Mbps\n", crawlingSpeed, downloadRate / 1000000);
 		
 
 		startTimeBetweenStatsThreadWakeup = clock();

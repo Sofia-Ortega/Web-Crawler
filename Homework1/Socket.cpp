@@ -13,9 +13,12 @@
 
 
 set<DWORD> Socket::seenIPs;
-set<char*, Socket::Comparator> Socket::seenHosts;
+// set<char*, Socket::Comparator> Socket::seenHosts;
+set<string> Socket::seenHosts;
 
 Socket::Socket(char* link) : url(Url(link)) {
+
+	readReady = false;
 
 	uniqueHost = 0;
 	successfulDNSNum = 0;
@@ -36,11 +39,15 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	// check if host duplicate
 //	printf("\tChecking host uniqueness...");
-	auto seenHostResult = seenHosts.insert(url.host);
+	string host = url.host;
+	auto seenHostResult = seenHosts.insert(host);
 	if (seenHostResult.second == false) {
+	//	printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
+		return;
 		throw std::exception("failed - Duplicate Host");
 	}
 	uniqueHost = 1; // passed host uniqueness
+	// printf("%s,%s,%i\n", url.baseUrl, url.host, uniqueHost);
 //	printf("passed\n");
 
 //	printf("\tDoing DNS... ");
@@ -50,15 +57,15 @@ Socket::Socket(char* link) : url(Url(link)) {
 	SOCKET roboSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (roboSock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
-		throw std::exception();
 		return;
+		throw std::exception();
 	}
 
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sock == INVALID_SOCKET) {
 		printf("socket() generated error %d\n", WSAGetLastError());
-		throw std::exception();
 		return;
+		throw std::exception();
 	}
 
 	// connectin to server
@@ -105,8 +112,8 @@ Socket::Socket(char* link) : url(Url(link)) {
 	DWORD checkIP = server.sin_addr.s_addr;
 	auto setResult = seenIPs.insert(checkIP);
 	if (setResult.second == false) {
-		throw std::exception("failed - Duplicate IP");
 		return;
+		throw std::exception("failed - Duplicate IP");
 	}
 	uniqueIp++;
 //	printf("passed\n");
@@ -169,9 +176,12 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	int connectResult2 = connect(sock, (struct sockaddr*)&server, sizeof(struct sockaddr_in));
 	if (connectResult2 == SOCKET_ERROR) {
-		printf("Connection error %d\n", WSAGetLastError());
+		// printf("Connection error %d\n", WSAGetLastError());
+		return;
 		throw std::exception();
 	}
+
+	readReady = true;
 
 //	printf("done in %i ms\n", endClock());
 
@@ -312,7 +322,7 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 	
 	size_t sendResult = send(mySock, getRequest, (int)strlen(getRequest), 0);
 	if (sendResult == SOCKET_ERROR) {
-		printf("Sending error: %d with url %s\n", WSAGetLastError(), url.baseUrl);
+		// printf("Sending error: %d with url %s\n", WSAGetLastError(), url.baseUrl);
 		return -1;
 	}
 
@@ -377,6 +387,7 @@ int Socket::readRequestIntoBuffer(char* getRequest, SOCKET mySock, int maxDownlo
 
 void Socket::Read(void) {
 	if (robotsNotAllowed) return;
+	if (!readReady) return;
 
 	clearBuffer();
 
@@ -384,7 +395,6 @@ void Socket::Read(void) {
 	startClock();
 
 	char* getRequest = formatGetRequest();
-	printf("Get Request: \n%s\n", getRequest);
 	int readResult = readRequestIntoBuffer(getRequest, sock, 2097152);
 	if (readResult == -1) {
 		return;

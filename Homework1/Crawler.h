@@ -43,6 +43,7 @@ private:
 
 	void statsLock();
 	void statsUnlock();
+
 public:
 	Crawler(int numOfThreads);
 	~Crawler();
