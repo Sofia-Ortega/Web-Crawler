@@ -255,7 +255,7 @@ void Crawler::printSummary() {
 	printf("\n");
 	printf("Extracted %i URLs @ %i/s\n", originalQueueSize, originalQueueSize / timeElapsed);
 	printf("Looked up %i DNS names @ %i/s\n", uniqueHosts, uniqueHosts / timeElapsed);
-	printf("Attempted %i site robots @ %i/s\n", robotsAttempted, robotsAttempted / timeElapsed);
+	printf("Attempted %i site robots @ %i/s\n", passedRobots, passedRobots / timeElapsed);
 	printf("Crawled %i pages @ %i/s (%.2g MB)\n", crawledUrls, crawledUrls / timeElapsed, mb);
 	printf("Parsed %i links @ %i/s\n", totalLinks, totalLinks / timeElapsed);
 	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);

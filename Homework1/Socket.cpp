@@ -104,7 +104,6 @@ Socket::Socket(char* link) : url(Url(link)) {
 	if (IP == INADDR_NONE) {
 
 		// if not valid ip, do DNS Lookup
-		printf("remoting: %s\n", url.baseUrl);
 		remote = gethostbyname(url.host);
 		if (remote == NULL) {
 			// printf("DNS Lookup failed for url: %s\n", url.baseUrl);
@@ -173,6 +172,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 	}
 
 	delete[] getRobotRequest;
+	passedRobots++;
 
 	//	printf("done in %i ms with %i bytes\n", endClock(), size);
 
@@ -188,7 +188,6 @@ Socket::Socket(char* link) : url(Url(link)) {
 	// check if robots.txt exists
 	if (roboStatusCode >= 400 && roboStatusCode <= 499) {
 		robotsNotAllowed = false;
-		passedRobots++;
 	}
 	else {
 		robotsNotAllowed = true;
