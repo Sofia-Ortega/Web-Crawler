@@ -59,7 +59,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	// check if host duplicate
 //	printf("\tChecking host uniqueness...");
-	string host = url.host;
+	string host (url.host);
 	hostLock();
 	auto seenHostResult = seenHosts.insert(host);
 	hostUnlock();
@@ -104,6 +104,7 @@ Socket::Socket(char* link) : url(Url(link)) {
 	if (IP == INADDR_NONE) {
 
 		// if not valid ip, do DNS Lookup
+		printf("remoting: %s\n", url.baseUrl);
 		remote = gethostbyname(url.host);
 		if (remote == NULL) {
 			// printf("DNS Lookup failed for url: %s\n", url.baseUrl);

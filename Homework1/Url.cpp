@@ -122,17 +122,20 @@ Url::Url(char* urlInput) : request(nullptr), baseUrl(nullptr) {
 	}
 
 	this->request = new char[requestLength];
+	memset(request, '\0', requestLength);
 
 	request[0] = '/';
+	// strcpy_s(request, requestLength, "\");
 
 	if (path)
-		strcpy(request + 1, path);
+		strcpy_s(request + 1, requestLength - 1, path);
 
 
 	if (query) {
-		strcat(request, "?");
-		strcat(request, query);
+		strcat_s(request, requestLength, "?");
+		strcat_s(request, requestLength, query);
 	}
+
 	
 
 	// printf("host %s, port %i, path %s, request %s\n", host, port, path, this->request);
@@ -147,7 +150,6 @@ Url::Url() : request(nullptr), baseUrl(nullptr) {}
 
 
 void Url::deleteUrl() {
-
 	if (request)
 		delete[] request;
 
