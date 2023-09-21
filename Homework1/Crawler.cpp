@@ -5,6 +5,8 @@
 
 Crawler::Crawler(int numOfThreads) : originalQueueSize(0), uniqueHosts(0), numOfDnsLookups(0), uniqueIps(0), passedRobots(0), crawledUrls(0), totalLinks(0), status200(0), status300(0), status400(0), status500(0), statusOther(0) {
 
+	tamuLinksFound = 0;
+
 	startClockTimer = clock();
 
 	this->maxThreadNum = numOfThreads;
@@ -136,6 +138,8 @@ void Crawler::Run() {
 
 			totalLinks += sock.numOfLinks;
 
+			tamuLinksFound += sock.tamuLinksFound;
+
 			int statusCode = sock.statusCode;
 
 			
@@ -258,5 +262,6 @@ void Crawler::printSummary() {
 	printf("Crawled %i pages @ %i/s (%.2g MB)\n", crawledUrls, crawledUrls / timeElapsed, mb);
 	printf("Parsed %i links @ %i/s\n", totalLinks, totalLinks / timeElapsed);
 	printf("HTTP codes: 2xx = %i, 3xx = %i, 4xx = %i, 5xx = %i, other = %i\n", status200, status300, status400, status500, statusOther);
+	printf("Tamu Links Found: %i", tamuLinksFound);
 }
 

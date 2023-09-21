@@ -52,6 +52,8 @@ Socket::Socket(char* link) : url(Url(link)) {
 
 	statusCode = -1;
 
+	tamuLinksFound = 0;
+
 	// initialize member variables
 	this->buffer = new char[BUFFER_SIZE];
 	this->capacity = BUFFER_SIZE;
@@ -493,16 +495,51 @@ void Socket::Parse(void) {
 		nLinks = 0;
 	}
 
-	/*
-	printf("Found %d links:\n", nLinks);
+	
+	//printf("Found %d links:\n", nLinks);
 
 	for (int i = 0; i < nLinks; i++) {
-		printf("%s\n", linkBuffer);
+		//printf("%s\n", linkBuffer);
+
+		char* link = linkBuffer;
+
+		// Hashtag
+		// find # -> remove 
+		char* hashTag = strrchr(link, '#');
+		if (hashTag != nullptr) {
+			*hashTag = '\0';
+		}
+
+		// find ? -> query -> remove
+		char* questionMark = strrchr(link, '?');
+		if (questionMark != nullptr) {
+			*questionMark = '\0'; // truncate
+		}
+
+		// Path
+		// find / -> path -> remove
+		char* forwardSlash = strchr(link, '/');
+		if (forwardSlash != nullptr) {
+			*forwardSlash = '\0';
+		}
+
+		const char* tamu = "tamu.edu";
+		char* mid = nullptr;
+		if (strlen(link) >= strlen(tamu)) {
+			mid = link + (strlen(link) - strlen(tamu));
+
+			if (strcmp(mid, tamu) == 0) {
+				// MATCH
+				printf("Tamu link found: %s", link);
+				tamuLinksFound++;
+			}
+		}
+
+
 		linkBuffer += strlen(linkBuffer) + 1;
 	}
 
-	delete parser;
-	*/
+	
 
 //	printf("done in %i ms with %d links\n", endClock(), nLinks);
 

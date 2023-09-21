@@ -141,7 +141,62 @@ int main(int argc, char* argv[]) {
 
 
 	// ----------------------------------------------------
+/*
+	std::ifstream myFile("input.txt");
 
+	string myLine;
+	while (getline(myFile, myLine)) {
+
+		char* link = new char[myLine.length() + 1];
+		strcpy_s(link, myLine.length() + 1, myLine.c_str());
+		
+		// Hashtag
+		// find # -> remove 
+		char* hashTag = strrchr(link, '#');
+		if (hashTag != nullptr) {
+			*hashTag = '\0';
+		}
+
+		// find ? -> query -> remove
+		char* questionMark = strrchr(link, '?');
+		if (questionMark != nullptr) {
+			*questionMark = '\0'; // truncate
+		}
+
+		// Path
+		// find / -> path -> remove
+		char* forwardSlash = strchr(link, '/');
+		if (forwardSlash != nullptr) {
+			*forwardSlash = '\0';
+		}
+
+
+		cout << myLine << ", "; 
+		const char* tamu = "tamu.edu";
+		char* mid = nullptr;
+		if (strlen(link) >= strlen(tamu)) {
+			mid = link + (strlen(link) - strlen(tamu));
+
+			if (strcmp(mid, tamu) == 0) {
+				cout << "A MATCH: ";
+			}
+			else {
+				cout << "NOPE: ";
+			}
+
+			cout << mid << endl;
+		}
+		else {
+			cout << "nullptr" << endl;
+		}
+
+	}
+
+	return 0;
+
+	*/
+
+	// FIXME: take compiler args
 
 	int numThreads = 500;
 ///	const char* inputFile = "input2019.txt";
@@ -149,7 +204,7 @@ int main(int argc, char* argv[]) {
 	 const char* inputFile = "URL-input-1M.txt";
 
 
-	bool runStatsThread = true;
+	bool runStatsThread = false;
 
 	HANDLE* handles = new HANDLE[numThreads + 1];
 	Crawler crawler = Crawler(numThreads);

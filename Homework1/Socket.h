@@ -88,6 +88,7 @@ public:
 	static set<string> seenHosts;
 
 
+	int tamuLinksFound;
 
 	short uniqueHost;
 	short successfulDNSNum;
